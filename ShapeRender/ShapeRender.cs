@@ -6,12 +6,12 @@ namespace ShapeRender
 {
     public class ShapeRender
     {
-        public static Bitmap RenderShapeFile(ShapeFile shapeFile)
+        public static Bitmap RenderShapeFile(ShapeFile shapeFile, double scale)
         {
-            var width = (int)(shapeFile.BoundingBox.Xmax - shapeFile.BoundingBox.Xmin);
-            var height = (int)(shapeFile.BoundingBox.Ymax - shapeFile.BoundingBox.Ymin);
+            var width = (shapeFile.BoundingBox.Xmax - shapeFile.BoundingBox.Xmin) * scale;
+            var height = (shapeFile.BoundingBox.Ymax - shapeFile.BoundingBox.Ymin) * scale;
             
-            var image = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format1bppIndexed);
+            var image = new Bitmap((int)width, (int)height);
             using (var graphics = Graphics.FromImage(image))
             {
 
@@ -24,7 +24,18 @@ namespace ShapeRender
                     {
                         for (var p = 0; p < polyLine.Points.Count-1; p++)
                         {
-                            DrawLine(graphics, polyLine.Points[p], polyLine.Points[p + 1], shapeFile.BoundingBox);
+                            DrawLine(graphics, polyLine.Points[p], polyLine.Points[p + 1], shapeFile.BoundingBox, scale);
+                        }
+                    }
+                }
+
+                foreach (var item in shapeFile.Polygons)
+                {
+                    foreach (var polyLine in item.Polygons)
+                    {
+                        for (var p = 0; p < polyLine.Points.Count - 1; p++)
+                        {
+                            DrawLine(graphics, polyLine.Points[p], polyLine.Points[p + 1], shapeFile.BoundingBox, scale);
                         }
                     }
                 }
@@ -33,11 +44,11 @@ namespace ShapeRender
             return image;
         }
 
-        private static void DrawLine(Graphics graphics, ShapePoint point1, ShapePoint point2, BoundingBox box)
+        private static void DrawLine(Graphics graphics, ShapePoint point1, ShapePoint point2, BoundingBox box, double scale)
         {
             var pen = new Pen(new SolidBrush(Color.Black), 1);
-            var p1 = new PointF((float)(point1.X - box.Xmin), (float)(point1.Y - box.Ymin));
-            var p2 = new PointF((float)(point2.X - box.Xmin), (float)(point2.Y - box.Ymin));
+            var p1 = new PointF((float)((point1.X - box.Xmin) * scale), (float)((point1.Y - box.Ymin) * scale));
+            var p2 = new PointF((float)((point2.X - box.Xmin) * scale), (float)((point2.Y - box.Ymin) * scale));
             graphics.DrawLine(pen, p1, p2);
         }
     }
