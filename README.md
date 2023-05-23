@@ -1,2 +1,3 @@
 # ShapeShifter
-ESRI file processing for .net core
+ESRI file processing library for .net core
+
