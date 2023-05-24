@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ShapeRender\ShapeRender.csproj" />
     <ProjectReference Include="..\ShapeShifter\ShapeShifter.csproj" />
   </ItemGroup>
 

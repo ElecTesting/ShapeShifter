@@ -63,7 +63,10 @@ namespace ShapeShifter
             {
                 if (cache.BoundingBox.Intersects(area))
                 {
-                    var thisCache = new ShapeCache();
+                    var thisCache = new ShapeCache()
+                    {
+                        FilePath = cache.FilePath,
+                    };
                     _area.Add(thisCache);
 
                     foreach (var item in cache.Items)
@@ -80,13 +83,14 @@ namespace ShapeShifter
             return count;
         }
 
-        public void GetArea()
+        public ShapeFile GetArea()
         {
             if (_area.Count() == 0)
             {
                 throw new Exception("No area set");
             }
 
+            return ShapeShifter.CreateShapeFileFromCache(_area);
         }
     }
 }

@@ -95,7 +95,14 @@ namespace ShapeShifter
 
             foreach (var filename in files)
             {
-                shapeCaches.Add(CreateShapeCacheFromFile(filename));
+                var cache = CreateShapeCacheFromFile(filename);
+                if (cache.BoundingBox.Xmin != 0
+                    && cache.BoundingBox.Xmax != 0
+                    && cache.BoundingBox.Ymin != 0
+                    && cache.BoundingBox.Ymax != 0)
+                {
+                    shapeCaches.Add(cache);
+                }
             }
 
             return shapeCaches;
@@ -424,6 +431,55 @@ namespace ShapeShifter
                 return a;
 
             return a > b ? a : b;
+        }
+
+        /* Generate area based Shape File
+         * 
+         * Creates a shape file based on the area cache provided
+         * 
+         */
+        public static ShapeFile CreateShapeFileFromCache(List<ShapeCache> caches)
+        {
+            var shapeFile = new ShapeFile();
+
+            foreach (var cache in caches)
+            {
+                CacheToShape(cache, shapeFile);
+            }
+            return shapeFile;
+        }
+
+        private static void CacheToShape(ShapeCache cache, ShapeFile shapeFile)
+        {
+            using (var reader = new BinReader(new FileStream(cache.FilePath, FileMode.Open, FileAccess.Read)))
+            {
+                foreach (var item in cache.Items)
+                {
+                    reader.BaseStream.Position = item.FileOffset;
+
+                    var shapeType = (ShapeType)reader.ReadInt32();
+
+                    switch (shapeType)
+                    {
+                        // empty record
+                        case ShapeType.NullShape:
+                            break;
+                        case ShapeType.Point:
+                            shapeFile.Points.Add(ReadPointRecord(reader));
+                            break;
+                        case ShapeType.PolyLine:
+                            shapeFile.PolyLines.Add(ReadPolyLine(reader));
+                            break;
+                        case ShapeType.Polygon:
+                            shapeFile.Polygons.Add(ReadPolyGon(reader));
+                            break;
+                        default:
+                            //Console.WriteLine($"Unsupported record type {shapeType} - skipping {recordLength} bytes");
+                            //reader.Move(recordLength - 4);
+                            break;
+                    };
+                }
+            }
         }
     }
 }
