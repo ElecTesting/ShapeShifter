@@ -1,7 +1,10 @@
 ﻿using ShapeShifter.Storage;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.IO;
 using System.Net.NetworkInformation;
 using System.Security.AccessControl;
+using System.Xml.Linq;
 
 namespace ShapeShifter
 {
@@ -37,7 +40,6 @@ namespace ShapeShifter
 
             foreach (var fileName in Directory.GetFiles(path, "*.shp"))
             {
-                //Console.WriteLine($"{Path.GetFileName(fileName)}");
                 shapeFiles.Add(ProcessShapeFile(fileName));
             }
 
@@ -60,39 +62,9 @@ namespace ShapeShifter
         /* Process Shape file from reader
          * 
          */
-
         public static ShapeFile ProcessShapeFile(BinReader reader, string name)
         {
-            var shapeFile = new ShapeFile()
-            {
-                Name = name,
-                FileCode = reader.ReadInt32BE(),
-                Unused1 = reader.ReadInt32BE(),
-                Unused2 = reader.ReadInt32BE(),
-                Unused3 = reader.ReadInt32BE(),
-                Unused4 = reader.ReadInt32BE(),
-                Unused5 = reader.ReadInt32BE(),
-                FileLength = reader.ReadInt32BE() * 2
-            };
-
-            if (shapeFile.FileLength != reader.Length)
-            {
-                throw new Exception($"File {name} has incorrect length");
-            }
-
-            shapeFile.Version = reader.ReadInt32();
-            shapeFile.ShapeType = (ShapeType)reader.ReadInt32();
-            shapeFile.BoundingBox = new BoundingBox()
-            {
-                Xmin = reader.ReadDouble(),
-                Ymin = reader.ReadDouble(),
-                Xmax = reader.ReadDouble(),
-                Ymax = reader.ReadDouble(),
-                Zmin = reader.ReadDouble(),
-                Zmax = reader.ReadDouble(),
-                Mmin = reader.ReadDouble(),
-                Mmax = reader.ReadDouble()
-            };
+            var shapeFile = ProcessShapeHeader(reader, name);
 
             ProcessRecords(reader, shapeFile);
 
@@ -104,9 +76,149 @@ namespace ShapeShifter
             return shapeFile;
         }
 
+        /* Create shape cache froma file path
+         */
+        public static ShapeCache CreateShapeCacheFromFile(string filePath)
+        {
+            using (var reader = new BinReader(new FileStream(filePath, FileMode.Open, FileAccess.Read)))
+            {
+                return CreateShapeCache(reader, filePath);
+            }
+        }
+
+        /* Create list of shape cache froma folder path
+        */
+        public static List<ShapeCache> CreateShapeCacheFromFolder(string filePath)
+        {
+            var shapeCaches = new List<ShapeCache>();
+            var files = Directory.GetFiles(filePath, "*.shp");
+
+            foreach (var filename in files)
+            {
+                shapeCaches.Add(CreateShapeCacheFromFile(filename));
+            }
+
+            return shapeCaches;
+        }
+
+
+
+        /* Create shape cache file from reader
+         */
+        public static ShapeCache CreateShapeCache(BinReader reader, string filePath)
+        {
+            var shapeFile = ProcessShapeHeader(reader, filePath);
+            var shapeCache = new ShapeCache()
+            {
+                BoundingBox = shapeFile.BoundingBox,
+                FilePath = filePath
+            };
+
+            ProcessShapeCacheRecords(reader, shapeCache);
+
+            if (reader.Position != shapeFile.FileLength)
+            {
+                throw new Exception("Not at end of file!");
+            }
+
+            return shapeCache;
+        }
+
+
+        private static void ProcessShapeCacheRecords(BinReader reader, ShapeCache shapeCache)
+        {
+            var recordIdCheck = 1;
+
+            while (reader.Position < reader.Length)
+            {
+                var recordId = reader.ReadInt32BE();
+                if (recordId != recordIdCheck)
+                {
+                    throw new Exception("Error walking file, record id mismatch");
+                }
+
+                var recordLength = reader.ReadInt32BE() * 2;
+
+                var currentPos = reader.Position;
+                var nextRecord = currentPos + recordLength;
+
+                var shapeType = (ShapeType)reader.ReadInt32();
+
+                var cacheItem = new ShapeCacheItem()
+                {
+                    RecordId = recordId,
+                    FileOffset = currentPos
+                };
+                
+                switch (shapeType)
+                {
+                    // empty record
+                    case ShapeType.NullShape:
+                        break;
+                    case ShapeType.Point:
+                        //shapeFile.Points.Add(ReadPointRecord(reader));
+                        cacheItem.Box = ReadPointRecordAsBox(reader);
+                        break;
+                    case ShapeType.PolyLine:
+                    case ShapeType.Polygon:
+                        cacheItem.Box = ReadBoundingBox(reader);
+                        break;
+                    default:
+                        Console.WriteLine($"Unsupported record type {shapeType} - skipping {recordLength} bytes");
+                        reader.Move(recordLength - 4);
+                        break;
+                };
+
+                shapeCache.Items.Add(cacheItem);
+
+                reader.BaseStream.Position = nextRecord;
+
+                recordIdCheck++;
+            }
+        }
+
+        /* Process shape file header record
+         * 
+         */
+        private static ShapeFile ProcessShapeHeader(BinReader reader, string filePath)
+        {
+            var shapeFile = new ShapeFile()
+            {
+                FileCode = reader.ReadInt32BE(),
+                Unused1 = reader.ReadInt32BE(),
+                Unused2 = reader.ReadInt32BE(),
+                Unused3 = reader.ReadInt32BE(),
+                Unused4 = reader.ReadInt32BE(),
+                Unused5 = reader.ReadInt32BE(),
+                FileLength = reader.ReadInt32BE() * 2,
+                FilePath = filePath
+            };
+
+            if (shapeFile.FileLength != reader.Length)
+            {
+                throw new Exception($"File {filePath} has incorrect length");
+            }
+
+            shapeFile.Version = reader.ReadInt32();
+            shapeFile.ShapeType = (ShapeType)reader.ReadInt32();
+            shapeFile.BoundingBox = new BoundingBoxHeader()
+            {
+                Xmin = reader.ReadDouble(),
+                Ymin = reader.ReadDouble(),
+                Xmax = reader.ReadDouble(),
+                Ymax = reader.ReadDouble(),
+                Zmin = reader.ReadDouble(),
+                Zmax = reader.ReadDouble(),
+                Mmin = reader.ReadDouble(),
+                Mmax = reader.ReadDouble()
+            };
+
+            return shapeFile;
+        }
+
         /* ProcessRecords
          * 
-         * continues to walk through the reader records from the shape file
+         * continues to walk through the reader and pulls records from the shape file
          * and adding them to the appropriate list.
          * 
          */
@@ -149,10 +261,7 @@ namespace ShapeShifter
                         break;
                 };
 
-                if (reader.Position != nextRecord) 
-                {
-                    throw new Exception("Incorrect position");
-                }
+                reader.BaseStream.Position = nextRecord;
 
                 recordIdCheck++;
             }
@@ -168,6 +277,23 @@ namespace ShapeShifter
                 Y = reader.ReadDouble()
             };
         }
+
+        /* reads the two doubles from the point record
+ */
+        private static BoundingBox ReadPointRecordAsBox(BinReader reader)
+        {
+            var x = reader.ReadDouble();
+            var y = reader.ReadDouble();
+
+            return new BoundingBox()
+            {
+                Xmin = x,
+                Ymin = y,
+                Xmax = x,
+                Ymax = y
+            };
+        }
+
 
         /* reads poly line record and returns object
          */
@@ -214,13 +340,6 @@ namespace ShapeShifter
 
             // add end of point stream to array
             parts[partId] = totalPoints;
-            /*
-            if (parts.Length > 2)
-            {
-                throw new Exception("TEST");
-            }*/
-
-            var pointOffset = reader.Position;
 
             // create polygons for each part
             partId = 0;
@@ -228,11 +347,6 @@ namespace ShapeShifter
             {
                 var startPos = parts[partId];
                 var endPos = parts[partId + 1];
-
-                if (reader.Position != (startPos*16) + pointOffset)
-                {
-                    throw new Exception("TEST");
-                }
 
                 var polygon = new BasePoloygon();
 
@@ -267,17 +381,17 @@ namespace ShapeShifter
          * dest = destination to push data into
          * 
          */
-        private static void BoundingBoxMinMax(BoundingBox source, BoundingBox dest)
+        private static void BoundingBoxMinMax(BoundingBoxHeader source, BoundingBoxHeader dest)
         {
             dest.Xmin = MinDouble(source.Xmin, dest.Xmin);
             dest.Ymin = MinDouble(source.Ymin, dest.Ymin);
-            dest.Zmin = MinDouble(source.Zmin, dest.Zmin);
-            dest.Mmin = MinDouble(source.Mmin, dest.Mmin);
+            //dest.Zmin = MinDouble(source.Zmin, dest.Zmin);
+            //dest.Mmin = MinDouble(source.Mmin, dest.Mmin);
 
             dest.Xmax = MaxDouble(source.Xmax, dest.Xmax);
             dest.Ymax = MaxDouble(source.Ymax, dest.Ymax);
-            dest.Zmax = MaxDouble(source.Zmax, dest.Zmax);
-            dest.Mmax = MaxDouble(source.Mmax, dest.Mmax);
+            //dest.Zmax = MaxDouble(source.Zmax, dest.Zmax);
+            //dest.Mmax = MaxDouble(source.Mmax, dest.Mmax);
         }
 
         /* MinDouble

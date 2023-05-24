@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace ShapeShifter.Storage
 {
-    public class ShapePolyLine
+    public class ShapePolyLine : ShapeObject
     {
-        public BoundingBox Box { get; set; } = new BoundingBox();
         public List<BasePoloygon> PolyLines { get; set; } = new List<BasePoloygon>();
     }
 }

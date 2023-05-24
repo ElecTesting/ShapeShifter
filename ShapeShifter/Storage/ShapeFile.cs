@@ -21,12 +21,15 @@ namespace ShapeShifter.Storage
         public int FileLength { get; set; }
         public int Version { get; set; }
         public ShapeType ShapeType { get; set; }
-        public BoundingBox BoundingBox { get; set; } = new BoundingBox();
+        public BoundingBoxHeader BoundingBox { get; set; } = new BoundingBoxHeader();
+        public string FilePath { get; set; } = "";  
 
         // diseminated from the records
         public List<ShapePoint> Points { get; set; } = new List<ShapePoint>();
         public List<ShapeMultiPoint> MultiPoints { get; set; } = new List<ShapeMultiPoint>();
         public List<ShapePolyLine> PolyLines { get; set; } = new List<ShapePolyLine>();
         public List<ShapePolygon> Polygons { get; set; } = new List<ShapePolygon>();
+
+        public List<ShapeObject> Objects { get; set; } = new List<ShapeObject>();
     }
 }

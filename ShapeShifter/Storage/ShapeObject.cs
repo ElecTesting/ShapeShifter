@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace ShapeShifter.Storage
 {
-    public class ShapeMultiPoint : ShapeObject
+    public class ShapeObject
     {
-        public List<ShapePoint> Points { get; set; } = new List<ShapePoint>();
+        public BoundingBox Box { get; set; } = new BoundingBox();
     }
 }
