@@ -438,7 +438,7 @@ namespace ShapeShifter
          * Creates a shape file based on the area cache provided
          * 
          */
-        public static ShapeFile CreateShapeFileFromCache(List<ShapeCache> caches)
+        public static ShapeFile CreateShapeFileFromCache(List<ShapeCache> caches, BoundingBox areaBox)
         {
             var shapeFile = new ShapeFile();
 
@@ -446,6 +446,15 @@ namespace ShapeShifter
             {
                 CacheToShape(cache, shapeFile);
             }
+
+            shapeFile.BoundingBox = new BoundingBoxHeader()
+            {
+                Xmin = areaBox.Xmin,
+                Ymin = areaBox.Ymin,
+                Xmax = areaBox.Xmax,
+                Ymax = areaBox.Ymax
+            };
+
             return shapeFile;
         }
 

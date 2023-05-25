@@ -1,5 +1,6 @@
 ﻿using ShapeShifter.Storage;
 using System.Drawing;
+using static System.Formats.Asn1.AsnWriter;
 #pragma warning disable CA1416 // Validate platform compatibility
 
 namespace ShapeRender
@@ -22,6 +23,51 @@ namespace ShapeRender
                     foreach (var polyLine in item.PolyLines)
                     {
                         for (var p = 0; p < polyLine.Points.Count-1; p++)
+                        {
+                            DrawLine(graphics, polyLine.Points[p], polyLine.Points[p + 1], shapeFile.BoundingBox, scale);
+                        }
+                    }
+                }
+
+                // do some lines
+                foreach (var item in shapeFile.Polygons)
+                {
+                    foreach (var polyLine in item.Polygons)
+                    {
+                        for (var p = 0; p < polyLine.Points.Count - 1; p++)
+                        {
+                            DrawLine(graphics, polyLine.Points[p], polyLine.Points[p + 1], shapeFile.BoundingBox, scale);
+                        }
+                    }
+                }
+
+                // do some points
+                foreach (var item in shapeFile.Points)
+                {
+                    DrawPoint(graphics, item.X, item.Y, shapeFile.BoundingBox, scale);
+                }
+            }
+
+            return image;
+        }
+
+        public static Bitmap RenderShapeFile(ShapeFile shapeFile, int width, int height)
+        {
+            //var width = (shapeFile.BoundingBox.Xmax - shapeFile.BoundingBox.Xmin) * scale;
+            //var height = (shapeFile.BoundingBox.Ymax - shapeFile.BoundingBox.Ymin) * scale;
+            var scale = width / (shapeFile.BoundingBox.Xmax - shapeFile.BoundingBox.Xmin);
+
+            var image = new Bitmap((int)width, (int)height);
+            using (var graphics = Graphics.FromImage(image))
+            {
+                // fill it with white
+                graphics.FillRegion(Brushes.White, new Region(new Rectangle(0, 0, (int)width, (int)height)));
+
+                foreach (var item in shapeFile.PolyLines)
+                {
+                    foreach (var polyLine in item.PolyLines)
+                    {
+                        for (var p = 0; p < polyLine.Points.Count - 1; p++)
                         {
                             DrawLine(graphics, polyLine.Points[p], polyLine.Points[p + 1], shapeFile.BoundingBox, scale);
                         }

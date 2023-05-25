@@ -11,6 +11,7 @@ namespace ShapeShifter
     {
         private List<ShapeCache> _cache;
         private List<ShapeCache> _area;
+        private BoundingBox _areaBox;
 
         public double Xmin { get; set; }
         public double Xmax { get; set; }
@@ -56,6 +57,7 @@ namespace ShapeShifter
         public int SetArea(BoundingBox area)
         {
             _area = new List<ShapeCache>();
+            _areaBox = area;
 
             var count = 0;
 
@@ -90,7 +92,7 @@ namespace ShapeShifter
                 throw new Exception("No area set");
             }
 
-            return ShapeShifter.CreateShapeFileFromCache(_area);
+            return ShapeShifter.CreateShapeFileFromCache(_area, _areaBox);
         }
     }
 }

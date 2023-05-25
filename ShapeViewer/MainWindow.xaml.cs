@@ -31,6 +31,8 @@ namespace ShapeViewer
         private double _windowRatioY;
         private string _folder;
         private double _meters;
+        private System.Windows.Shapes.Rectangle _viewWindow;
+        private bool _rendering = false;
 
         public MainWindow()
         {
@@ -40,6 +42,11 @@ namespace ShapeViewer
             TextAreaXmax.Text = "410000";
             TextAreaYmin.Text = "430000";
             TextAreaYmax.Text = "440000";
+
+            _meters = 1.0;
+            _windowX = 0.5;
+            _windowY = 0.5;
+
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -65,8 +72,41 @@ namespace ShapeViewer
                     _shapeManager = new ShapeManager(path);
                     _folder = path;
                     ShowStats();
+                    SetViewWindow();
                 }
             }
+        }
+
+        private const int _windowSize = 200;
+
+        // MouseLeftButtonDown="WinDown" MouseMove="WinMove" MouseLeftButtonUp="WinUp" 
+
+        private void SetViewWindow()
+        {
+            var viewHeightPercent = _shapeManager.Height / _shapeManager.Width;
+            var newHeight = _windowSize * viewHeightPercent;
+            
+            var viewPortSize = _meters / _shapeManager.Width * _windowSize;
+
+            _canvas.Width = _windowSize;
+            _canvas.Height = newHeight;
+            _canvas.Background = System.Windows.Media.Brushes.LightGray;
+            _canvas.Children.Clear();
+
+            // how do you programatically add controls to a WPF window?
+            _viewWindow = new System.Windows.Shapes.Rectangle();
+            _viewWindow.Width = viewPortSize;
+            _viewWindow.Height = viewPortSize;
+            _viewWindow.Fill = new SolidColorBrush(Colors.RoyalBlue);
+            // assign handlers
+            _viewWindow.MouseDown += ViewWindow_MouseDown;
+            _viewWindow.MouseMove += ViewWindow_MouseMove;
+            _viewWindow.MouseUp += ViewWindow_MouseUp;
+            
+            Canvas.SetLeft(_viewWindow, (_canvas.Width * _windowX) - _viewWindow.Width/2);
+            Canvas.SetTop(_viewWindow, (_canvas.Height * _windowY) - _viewWindow.Height/2);
+
+            _canvas.Children.Add(_viewWindow);
         }
 
         private void ShowStats()
@@ -78,107 +118,136 @@ namespace ShapeViewer
             Items.Text = _shapeManager.RecordCount.ToString();
             WidthText.Text = _shapeManager.Width.ToString();
             HeightText.Text = _shapeManager.Height.ToString();
-            _windowX = _shapeManager.Width / 2;
-            _windowY = _shapeManager.Height / 2;
+            //_windowX = _shapeManager.Width / 2;
+            //_windowY = _shapeManager.Height / 2;
             UpdatePos();
         }
 
         private void UpdatePos()
         {
-            PosX.Text = _windowX.ToString();
-            PosY.Text = _windowY.ToString();
+            PosX.Text = $"{_windowX * _shapeManager.Width}";
+            PosY.Text = $"{_windowY * _shapeManager.Height}";
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void SetNewArea()
         {
-            var xmin = _shapeManager.Xmin + (_shapeManager.Width / 2) - (_meters/2);
-            var xmax = xmin + _meters;
-            var ymin = _shapeManager.Ymin + (_shapeManager.Height / 2) - (_meters / 2);
-            var ymax = ymin + _meters;
-
-            var box = new BoundingBox()
+            if (!_rendering)
             {
-                Xmin = xmin,
-                Xmax = xmax,
-                Ymin = ymin,
-                Ymax = ymax
-            };
+                _rendering = true;
 
-            TextAreaXmin.Text = box.Xmin.ToString();
-            TextAreaXmax.Text = box.Xmax.ToString();
-            TextAreaYmin.Text = box.Ymin.ToString();
-            TextAreaYmax.Text = box.Ymax.ToString();
+                var xmin = _shapeManager.Xmin + (_windowX * _shapeManager.Width) - (_meters / 2);
+                var xmax = xmin + _meters;
+                var ymin = _shapeManager.Ymin + (_windowY * _shapeManager.Height) - (_meters / 2);
+                var ymax = ymin + _meters;
 
-            var temp = _shapeManager.SetArea(box);
-            ItemsArea.Text = temp.ToString();
+                var box = new BoundingBox()
+                {
+                    Xmin = xmin,
+                    Xmax = xmax,
+                    Ymin = ymin,
+                    Ymax = ymax
+                };
 
-            var areaOnly = _shapeManager.GetArea();
-            areaOnly.BoundingBox = new BoundingBoxHeader()
-            {
-                Xmin = _shapeManager.Xmin,
-                Xmax = _shapeManager.Xmax,
-                Ymin = _shapeManager.Ymin,
-                Ymax = _shapeManager.Ymax
-            };
-            
-            ImageDump.Stretch = Stretch.Uniform;
-            ImageDump.StretchDirection = StretchDirection.Both;
+                TextAreaXmin.Text = box.Xmin.ToString();
+                TextAreaXmax.Text = box.Xmax.ToString();
+                TextAreaYmin.Text = box.Ymin.ToString();
+                TextAreaYmax.Text = box.Ymax.ToString();
 
-            //var shapeTest = ShapeShifter.ShapeShifter.MergeAllShapeFiles(_folder);
-            var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, 0.1);
+                var temp = _shapeManager.SetArea(box);
+                ItemsArea.Text = temp.ToString();
 
-            using (MemoryStream memory = new MemoryStream())
-            {
-                testImage.Save(memory, ImageFormat.Png);
-                memory.Position = 0;
-                BitmapImage bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                ImageDump.Source = bitmapImage;
+                var areaOnly = _shapeManager.GetArea();
+
+                ImageDump.Stretch = Stretch.Uniform;
+                ImageDump.StretchDirection = StretchDirection.Both;
+
+                //var shapeTest = ShapeShifter.ShapeShifter.MergeAllShapeFiles(_folder);
+                var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, (int)ImageDump.Width, (int)ImageDump.Height);
+
+                using (MemoryStream memory = new MemoryStream())
+                {
+                    testImage.Save(memory, ImageFormat.Png);
+                    memory.Position = 0;
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.StreamSource = memory;
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.EndInit();
+                    ImageDump.Source = bitmapImage;
+                }
+                _rendering = false;
             }
-
-            
         }
 
-        private bool isDragging = false;
-        private System.Windows.Point offset;
+        private void Button_SetArea(object sender, RoutedEventArgs e)
+        {
+            SetNewArea();
+        }
+
+        private bool _drag = false;
+        private System.Windows.Point _startPoint;
         private double _windowX;
         private double _windowY;
 
-        private void WinDown(object sender, MouseButtonEventArgs e)
+        private void ViewWindow_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            isDragging = true;
-            offset = e.GetPosition(draggableRectangle);
-            draggableRectangle.CaptureMouse();
+            _drag = true;
+            // save start point of dragging
+            _startPoint = Mouse.GetPosition(_canvas);
         }
 
-        private void WinMove(object sender, MouseEventArgs e)
+        private void ViewWindow_MouseMove(object sender, MouseEventArgs e)
         {
-            if (isDragging)
+            // if dragging, then adjust rectangle position based on mouse movement
+            if (_drag)
             {
-                System.Windows.Point currentPos = e.GetPosition(this);
-                _windowX += currentPos.X - offset.X;
-                _windowY += currentPos.Y - offset.Y;
-                _windowX = _windowX < 0 ? 0 : _windowX;
-                _windowX = _windowX > _shapeManager.Width ? _shapeManager.Width : _windowX;
-                _windowY = _windowY < 0 ? 0 : _windowY;
-                _windowY = _windowY > _shapeManager.Height ? _shapeManager.Height : _windowY;
-                UpdatePos();
+                var draggedRectangle = (System.Windows.Shapes.Rectangle)sender;
+                var newPoint = Mouse.GetPosition(_canvas);
+
+                double left = Canvas.GetLeft(draggedRectangle);
+                double top = Canvas.GetTop(draggedRectangle);
+
+                if (left >= 0 && left <= _canvas.Width - draggedRectangle.Width)
+                {
+                    Canvas.SetLeft(draggedRectangle, left + (newPoint.X - _startPoint.X));
+                    _startPoint.X = newPoint.X;
+                }
+
+                if (top >= 0 && top <= _canvas.Height - draggedRectangle.Height)
+                {
+                    Canvas.SetTop(draggedRectangle, top + (newPoint.Y - _startPoint.Y));
+                    _startPoint.Y = newPoint.Y; 
+                }
+
+                _windowX = ((Canvas.GetLeft(draggedRectangle) + (draggedRectangle.Width / 2)) / _canvas.Width);
+                _windowY = ((Canvas.GetTop(draggedRectangle) + (draggedRectangle.Height / 2)) / _canvas.Height);
+                PosX.Text = _windowX.ToString();
+                PosY.Text = _windowY.ToString();
+                SetNewArea();
+
+                //_startPoint = newPoint;
             }
         }
-
-        private void WinUp(object sender, MouseButtonEventArgs e)
+        
+        private void ViewWindow_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            isDragging = false;
-            draggableRectangle.ReleaseMouseCapture();
+            // stop dragging
+            var draggedRectangle = (System.Windows.Shapes.Rectangle)sender;
+            SetNewArea();
+            _drag = false;
         }
 
         private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            _meters = e.NewValue * 1000;
-            ZoomVal.Text = string.Format("{0:0.00}", _meters);   
+            _meters = e.NewValue * 1000 < 1 ? 1 : e.NewValue * 1000;
+            ZoomVal.Text = string.Format("{0:0.00}", _meters);
+            SetViewWindow();
+            SetNewArea();
+        }
+
+        private void Button_GetArea(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
