@@ -77,7 +77,7 @@ namespace ShapeViewer
             }
         }
 
-        private const int _windowSize = 200;
+        private const int _windowSize = 500;
 
         // MouseLeftButtonDown="WinDown" MouseMove="WinMove" MouseLeftButtonUp="WinUp" 
 
