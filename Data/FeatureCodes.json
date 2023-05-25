@@ -1,0 +1,1386 @@
+[
+ {
+  "Feature": "Building",
+  "FeatType": "Area",
+  "FeatCode": 10021,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Building",
+  "FeatType": "Line",
+  "FeatCode": 10017,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Building",
+  "FeatType": "Point",
+  "FeatCode": 10022,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Building",
+  "FeatType": "Symbol",
+  "FeatCode": 10016,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Building",
+  "FeatType": "Text",
+  "FeatCode": 10020,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Building",
+  "FeatType": "Line",
+  "FeatCode": 10018,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Building",
+  "FeatType": "Line",
+  "FeatCode": 10019,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Buildings Or Structure",
+  "FeatType": "Area",
+  "FeatCode": 10025,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Buildings Or Structure",
+  "FeatType": "Line",
+  "FeatCode": 10023,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Buildings Or Structure",
+  "FeatType": "Point",
+  "FeatCode": 10024,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Buildings Or Structure",
+  "FeatType": "Symbol",
+  "FeatCode": 10027,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Buildings Or Structure",
+  "FeatType": "Text",
+  "FeatCode": 10026,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Buildings Or Structure",
+  "FeatType": "Text",
+  "FeatCode": 10028,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Built Environment",
+  "FeatType": "Area",
+  "FeatCode": 10031,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Built Environment",
+  "FeatType": "Line",
+  "FeatCode": 10032,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Built Environment",
+  "FeatType": "Point",
+  "FeatCode": 10029,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Built Environment",
+  "FeatType": "Symbol",
+  "FeatCode": 10030,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Built Environment",
+  "FeatType": "Text",
+  "FeatCode": 10034,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "Built Environment",
+  "FeatType": "Text",
+  "FeatCode": 10033,
+  "Red": 255,
+  "Green": 220,
+  "Blue": 175
+ },
+ {
+  "Feature": "General Feature",
+  "FeatType": "Area",
+  "FeatCode": 10044,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "General Feature",
+  "FeatType": "Line",
+  "FeatCode": 10046,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "General Feature",
+  "FeatType": "Point",
+  "FeatCode": 10045,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "General Feature",
+  "FeatType": "Symbol",
+  "FeatCode": 10042,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "General Feature",
+  "FeatType": "Text",
+  "FeatCode": 10043,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "General Feature",
+  "FeatType": "Point",
+  "FeatCode": 10051,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "General Feature",
+  "FeatType": "Point",
+  "FeatCode": 10050,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "General Feature",
+  "FeatType": "Point",
+  "FeatCode": 10048,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "General Feature",
+  "FeatType": "Line",
+  "FeatCode": 10041,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "General Surface",
+  "FeatType": "Area",
+  "FeatCode": 10056,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 204
+ },
+ {
+  "Feature": "General Surface",
+  "FeatType": "Line",
+  "FeatCode": 10052,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 204
+ },
+ {
+  "Feature": "General Surface",
+  "FeatType": "Point",
+  "FeatCode": 10057,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 204
+ },
+ {
+  "Feature": "General Surface",
+  "FeatType": "Symbol",
+  "FeatCode": 10055,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 204
+ },
+ {
+  "Feature": "General Surface",
+  "FeatType": "Text",
+  "FeatCode": 10059,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 204
+ },
+ {
+  "Feature": "General Surface",
+  "FeatType": "Area",
+  "FeatCode": 10053,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 204
+ },
+ {
+  "Feature": "General Surface",
+  "FeatType": "Area",
+  "FeatCode": 10054,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 204
+ },
+ {
+  "Feature": "General Surface",
+  "FeatType": "Line",
+  "FeatCode": 10058,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 204
+ },
+ {
+  "Feature": "Glasshouse",
+  "FeatType": "Area",
+  "FeatCode": 10062,
+  "Red": 255,
+  "Green": 204,
+  "Blue": 153
+ },
+ {
+  "Feature": "Glasshouse",
+  "FeatType": "Line",
+  "FeatCode": 10064,
+  "Red": 255,
+  "Green": 204,
+  "Blue": 153
+ },
+ {
+  "Feature": "Glasshouse",
+  "FeatType": "Point",
+  "FeatCode": 10063,
+  "Red": 255,
+  "Green": 204,
+  "Blue": 153
+ },
+ {
+  "Feature": "Glasshouse",
+  "FeatType": "Symbol",
+  "FeatCode": 10061,
+  "Red": 255,
+  "Green": 204,
+  "Blue": 153
+ },
+ {
+  "Feature": "Glasshouse",
+  "FeatType": "Text",
+  "FeatCode": 10060,
+  "Red": 255,
+  "Green": 204,
+  "Blue": 153
+ },
+ {
+  "Feature": "Height Control",
+  "FeatType": "Area",
+  "FeatCode": 10065,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Height Control",
+  "FeatType": "Line",
+  "FeatCode": 10071,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Height Control",
+  "FeatType": "Point",
+  "FeatCode": 10068,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Height Control",
+  "FeatType": "Symbol",
+  "FeatCode": 10070,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Height Control",
+  "FeatType": "Text",
+  "FeatCode": 10069,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Height Control",
+  "FeatType": "Point",
+  "FeatCode": 10067,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Height Control",
+  "FeatType": "Symbol",
+  "FeatCode": 10066,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Historic Interest",
+  "FeatType": "Area",
+  "FeatCode": 10076,
+  "Red": 220,
+  "Green": 220,
+  "Blue": 190
+ },
+ {
+  "Feature": "Historic Interest",
+  "FeatType": "Line",
+  "FeatCode": 10075,
+  "Red": 220,
+  "Green": 220,
+  "Blue": 190
+ },
+ {
+  "Feature": "Historic Interest",
+  "FeatType": "Point",
+  "FeatCode": 10080,
+  "Red": 220,
+  "Green": 220,
+  "Blue": 190
+ },
+ {
+  "Feature": "Historic Interest",
+  "FeatType": "Symbol",
+  "FeatCode": 10073,
+  "Red": 220,
+  "Green": 220,
+  "Blue": 190
+ },
+ {
+  "Feature": "Historic Interest",
+  "FeatType": "Text",
+  "FeatCode": 10074,
+  "Red": 220,
+  "Green": 220,
+  "Blue": 190
+ },
+ {
+  "Feature": "Historic Interest",
+  "FeatType": "Text",
+  "FeatCode": 10077,
+  "Red": 220,
+  "Green": 220,
+  "Blue": 190
+ },
+ {
+  "Feature": "Historic Interest",
+  "FeatType": "Point",
+  "FeatCode": 10072,
+  "Red": 220,
+  "Green": 220,
+  "Blue": 190
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Area",
+  "FeatCode": 10089,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Line",
+  "FeatCode": 10087,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Point",
+  "FeatCode": 10088,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Symbol",
+  "FeatCode": 10084,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Text",
+  "FeatCode": 10090,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Text",
+  "FeatCode": 10086,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Line",
+  "FeatCode": 10092,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Point",
+  "FeatCode": 10085,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Symbol",
+  "FeatCode": 10091,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Symbol",
+  "FeatCode": 10082,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Inland Water",
+  "FeatType": "Line",
+  "FeatCode": 10083,
+  "Red": 190,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Area",
+  "FeatCode": 10093,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Line",
+  "FeatCode": 10095,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Point",
+  "FeatCode": 10094,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Symbol",
+  "FeatCode": 10106,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Text",
+  "FeatCode": 10102,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Line",
+  "FeatCode": 10103,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Line",
+  "FeatCode": 10097,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Area",
+  "FeatCode": 10099,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Text",
+  "FeatCode": 10105,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Point",
+  "FeatCode": 10100,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Line",
+  "FeatCode": 10101,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Area",
+  "FeatCode": 10096,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Line",
+  "FeatCode": 10104,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Landform",
+  "FeatType": "Line",
+  "FeatCode": 10098,
+  "Red": 210,
+  "Green": 255,
+  "Blue": 180
+ },
+ {
+  "Feature": "Natural Environment",
+  "FeatType": "Area",
+  "FeatCode": 10111,
+  "Red": 220,
+  "Green": 255,
+  "Blue": 190
+ },
+ {
+  "Feature": "Natural Environment",
+  "FeatType": "Line",
+  "FeatCode": 10110,
+  "Red": 220,
+  "Green": 255,
+  "Blue": 190
+ },
+ {
+  "Feature": "Natural Environment",
+  "FeatType": "Point",
+  "FeatCode": 10109,
+  "Red": 220,
+  "Green": 255,
+  "Blue": 190
+ },
+ {
+  "Feature": "Natural Environment",
+  "FeatType": "Symbol",
+  "FeatCode": 10108,
+  "Red": 220,
+  "Green": 255,
+  "Blue": 190
+ },
+ {
+  "Feature": "Natural Environment",
+  "FeatType": "Text",
+  "FeatCode": 10107,
+  "Red": 220,
+  "Green": 255,
+  "Blue": 190
+ },
+ {
+  "Feature": "Network Or Polygon Closing Geometry",
+  "FeatType": "Area",
+  "FeatCode": 10116,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Network Or Polygon Closing Geometry",
+  "FeatType": "Line",
+  "FeatCode": 10115,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Network Or Polygon Closing Geometry",
+  "FeatType": "Point",
+  "FeatCode": 10118,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Network Or Polygon Closing Geometry",
+  "FeatType": "Symbol",
+  "FeatCode": 10117,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Network Or Polygon Closing Geometry",
+  "FeatType": "Text",
+  "FeatCode": 10112,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Network Or Polygon Closing Geometry",
+  "FeatType": "Line",
+  "FeatCode": 10114,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Network Or Polygon Closing Geometry",
+  "FeatType": "Line",
+  "FeatCode": 10113,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Path",
+  "FeatType": "Area",
+  "FeatCode": 10123,
+  "Red": 204,
+  "Green": 204,
+  "Blue": 204
+ },
+ {
+  "Feature": "Path",
+  "FeatType": "Line",
+  "FeatCode": 10124,
+  "Red": 204,
+  "Green": 204,
+  "Blue": 204
+ },
+ {
+  "Feature": "Path",
+  "FeatType": "Point",
+  "FeatCode": 10120,
+  "Red": 204,
+  "Green": 204,
+  "Blue": 204
+ },
+ {
+  "Feature": "Path",
+  "FeatType": "Symbol",
+  "FeatCode": 10121,
+  "Red": 204,
+  "Green": 204,
+  "Blue": 204
+ },
+ {
+  "Feature": "Path",
+  "FeatType": "Text",
+  "FeatCode": 10122,
+  "Red": 204,
+  "Green": 204,
+  "Blue": 204
+ },
+ {
+  "Feature": "Path",
+  "FeatType": "Area",
+  "FeatCode": 10119,
+  "Red": 204,
+  "Green": 204,
+  "Blue": 204
+ },
+ {
+  "Feature": "Path",
+  "FeatType": "Line",
+  "FeatCode": 10125,
+  "Red": 204,
+  "Green": 204,
+  "Blue": 204
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Area",
+  "FeatCode": 10126,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Line",
+  "FeatCode": 10137,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Point",
+  "FeatCode": 10132,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Symbol",
+  "FeatCode": 10134,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Text",
+  "FeatCode": 10133,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Symbol",
+  "FeatCode": 10130,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Point",
+  "FeatCode": 10129,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Line",
+  "FeatCode": 10127,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Line",
+  "FeatCode": 10131,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Line",
+  "FeatCode": 10128,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Line",
+  "FeatCode": 10136,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Political Or Administrative",
+  "FeatType": "Line",
+  "FeatCode": 10135,
+  "Red": 255,
+  "Green": 0,
+  "Blue": 255
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Area",
+  "FeatCode": 10167,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Line",
+  "FeatCode": 10155,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Point",
+  "FeatCode": 10159,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Symbol",
+  "FeatCode": 10161,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Text",
+  "FeatCode": 10166,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Line",
+  "FeatCode": 10160,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Text",
+  "FeatCode": 10156,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Line",
+  "FeatCode": 10164,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Line",
+  "FeatCode": 10162,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Line",
+  "FeatCode": 10163,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Point",
+  "FeatCode": 10158,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Symbol",
+  "FeatCode": 10165,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Rail",
+  "FeatType": "Line",
+  "FeatCode": 10157,
+  "Red": 0,
+  "Green": 0,
+  "Blue": 0
+ },
+ {
+  "Feature": "Road Or Track",
+  "FeatType": "Area",
+  "FeatCode": 10172,
+  "Red": 215,
+  "Green": 215,
+  "Blue": 215
+ },
+ {
+  "Feature": "Road Or Track",
+  "FeatType": "Line",
+  "FeatCode": 10175,
+  "Red": 215,
+  "Green": 215,
+  "Blue": 215
+ },
+ {
+  "Feature": "Road Or Track",
+  "FeatType": "Point",
+  "FeatCode": 10176,
+  "Red": 215,
+  "Green": 215,
+  "Blue": 215
+ },
+ {
+  "Feature": "Road Or Track",
+  "FeatType": "Symbol",
+  "FeatCode": 10170,
+  "Red": 215,
+  "Green": 215,
+  "Blue": 215
+ },
+ {
+  "Feature": "Road Or Track",
+  "FeatType": "Text",
+  "FeatCode": 10171,
+  "Red": 215,
+  "Green": 215,
+  "Blue": 215
+ },
+ {
+  "Feature": "Road Or Track",
+  "FeatType": "Line",
+  "FeatCode": 10168,
+  "Red": 215,
+  "Green": 215,
+  "Blue": 215
+ },
+ {
+  "Feature": "Road Or Track",
+  "FeatType": "Text",
+  "FeatCode": 10169,
+  "Red": 215,
+  "Green": 215,
+  "Blue": 215
+ },
+ {
+  "Feature": "Road Or Track",
+  "FeatType": "Symbol",
+  "FeatCode": 10177,
+  "Red": 215,
+  "Green": 215,
+  "Blue": 215
+ },
+ {
+  "Feature": "Road Or Track",
+  "FeatType": "Line",
+  "FeatCode": 10173,
+  "Red": 215,
+  "Green": 215,
+  "Blue": 215
+ },
+ {
+  "Feature": "Roadside",
+  "FeatType": "Area",
+  "FeatCode": 10183,
+  "Red": 210,
+  "Green": 210,
+  "Blue": 170
+ },
+ {
+  "Feature": "Roadside",
+  "FeatType": "Line",
+  "FeatCode": 10180,
+  "Red": 210,
+  "Green": 210,
+  "Blue": 170
+ },
+ {
+  "Feature": "Roadside",
+  "FeatType": "Point",
+  "FeatCode": 10182,
+  "Red": 210,
+  "Green": 210,
+  "Blue": 170
+ },
+ {
+  "Feature": "Roadside",
+  "FeatType": "Symbol",
+  "FeatCode": 10181,
+  "Red": 210,
+  "Green": 210,
+  "Blue": 170
+ },
+ {
+  "Feature": "Roadside",
+  "FeatType": "Text",
+  "FeatCode": 10178,
+  "Red": 210,
+  "Green": 210,
+  "Blue": 170
+ },
+ {
+  "Feature": "Roadside",
+  "FeatType": "Point",
+  "FeatCode": 10179,
+  "Red": 210,
+  "Green": 210,
+  "Blue": 170
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Area",
+  "FeatCode": 10185,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Line",
+  "FeatCode": 10195,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Point",
+  "FeatCode": 10186,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Symbol",
+  "FeatCode": 10194,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Text",
+  "FeatCode": 10184,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Area",
+  "FeatCode": 10190,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Line",
+  "FeatCode": 10188,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Area",
+  "FeatCode": 10193,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Line",
+  "FeatCode": 10189,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Point",
+  "FeatCode": 10192,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Point",
+  "FeatCode": 10191,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Structure",
+  "FeatType": "Area",
+  "FeatCode": 10187,
+  "Red": 255,
+  "Green": 215,
+  "Blue": 195
+ },
+ {
+  "Feature": "Terrain And Height",
+  "FeatType": "Area",
+  "FeatCode": 10199,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Terrain And Height",
+  "FeatType": "Line",
+  "FeatCode": 10201,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Terrain And Height",
+  "FeatType": "Point",
+  "FeatCode": 10200,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Terrain And Height",
+  "FeatType": "Symbol",
+  "FeatCode": 10196,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Terrain And Height",
+  "FeatType": "Text",
+  "FeatCode": 10198,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Terrain And Height",
+  "FeatType": "Point",
+  "FeatCode": 10202,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Terrain And Height",
+  "FeatType": "Point",
+  "FeatCode": 10197,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Area",
+  "FeatCode": 10210,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Line",
+  "FeatCode": 10208,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Point",
+  "FeatCode": 10209,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Symbol",
+  "FeatCode": 10206,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Text",
+  "FeatCode": 10204,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Text",
+  "FeatCode": 10207,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Area",
+  "FeatCode": 10203,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Text",
+  "FeatCode": 10205,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Line",
+  "FeatCode": 10211,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Tidal Water",
+  "FeatType": "Line",
+  "FeatCode": 10212,
+  "Red": 0,
+  "Green": 204,
+  "Blue": 255
+ },
+ {
+  "Feature": "Unclassified",
+  "FeatType": "Area",
+  "FeatCode": 10217,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Unclassified",
+  "FeatType": "Line",
+  "FeatCode": 10216,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Unclassified",
+  "FeatType": "Point",
+  "FeatCode": 10215,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Unclassified",
+  "FeatType": "Symbol",
+  "FeatCode": 10214,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ },
+ {
+  "Feature": "Unclassified",
+  "FeatType": "Text",
+  "FeatCode": 10213,
+  "Red": 255,
+  "Green": 255,
+  "Blue": 255
+ }
+]

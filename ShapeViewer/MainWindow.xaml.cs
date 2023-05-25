@@ -38,15 +38,9 @@ namespace ShapeViewer
         {
             InitializeComponent();
 
-            TextAreaXmin.Text = "400000";
-            TextAreaXmax.Text = "410000";
-            TextAreaYmin.Text = "430000";
-            TextAreaYmax.Text = "440000";
-
             _meters = 1.0;
             _windowX = 0.5;
             _windowY = 0.5;
-
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -248,6 +242,11 @@ namespace ShapeViewer
         private void Button_GetArea(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ImageDump_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ImageDump.RenderTransform(new TranslateTransform(10, 10));
         }
     }
 }

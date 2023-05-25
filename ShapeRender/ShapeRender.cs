@@ -63,6 +63,7 @@ namespace ShapeRender
                 // fill it with white
                 graphics.FillRegion(Brushes.White, new Region(new Rectangle(0, 0, (int)width, (int)height)));
 
+                // do the lines
                 foreach (var item in shapeFile.PolyLines)
                 {
                     foreach (var polyLine in item.PolyLines)
@@ -74,15 +75,12 @@ namespace ShapeRender
                     }
                 }
 
-                // do some lines
+                // do the polys
                 foreach (var item in shapeFile.Polygons)
                 {
-                    foreach (var polyLine in item.Polygons)
+                    foreach (var poly in item.Polygons)
                     {
-                        for (var p = 0; p < polyLine.Points.Count - 1; p++)
-                        {
-                            DrawLine(graphics, polyLine.Points[p], polyLine.Points[p + 1], shapeFile.BoundingBox, scale);
-                        }
+                        DrawPoly(graphics, poly, shapeFile.BoundingBox, scale, item.Color);
                     }
                 }
 
@@ -96,6 +94,27 @@ namespace ShapeRender
             return image;
         }
 
+        private static void DrawPoly(Graphics graphics, BasePoloygon poly, BoundingBoxHeader box, double scale, Color color)
+        {
+            //var rand = new Random(poly.Points.Count);
+            //var r = rand.Next(0, 255);
+            //var g = rand.Next(0, 255);
+            //var b = rand.Next(0, 255);
+
+            var pen = new Pen(new SolidBrush(Color.Black), 1);
+            var brush = new SolidBrush(color);
+
+            var newPoints = new List<PointF>();
+
+            foreach (var point in poly.Points)
+            {
+                newPoints.Add(new PointF((float)((point.X - box.Xmin) * scale), (float)((point.Y - box.Ymin) * scale)));
+            }
+            //graphics.DrawPolygon(pen, newPoints.ToArray());
+            graphics.FillPolygon(brush, newPoints.ToArray());
+            graphics.DrawPolygon(pen, newPoints.ToArray());
+        }
+
         private static void DrawLine(Graphics graphics, ShapePoint point1, ShapePoint point2, BoundingBoxHeader box, double scale)
         {
             var pen = new Pen(new SolidBrush(Color.Black), 1);
@@ -106,9 +125,12 @@ namespace ShapeRender
 
         private static void DrawPoint(Graphics graphics, double x, double y, BoundingBoxHeader box, double scale)
         {
-            var pen = new Pen(new SolidBrush(Color.Black), 1);
+            //var pen = new Pen(new SolidBrush(Color.Black), 1);
             var p1 = new PointF((float)((x - box.Xmin) * scale), (float)((y - box.Ymin) * scale));
-            graphics.DrawRectangle(pen, p1.X, p1.Y, 1, 1);
+            //graphics.DrawRectangle(pen, p1.X, p1.Y, 1, 1);
+            //graphics.DrawString("POINT!", new Font("Arial", 10), Brushes.HotPink, p1.X, p1.Y);
+            
+
         }
     }
 #pragma warning restore CA1416 // Validate platform compatibility

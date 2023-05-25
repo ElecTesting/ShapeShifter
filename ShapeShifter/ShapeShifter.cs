@@ -1,15 +1,21 @@
-﻿using ShapeShifter.Storage;
+﻿using dBASE.NET;
+using ShapeShifter.Storage;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Net.NetworkInformation;
 using System.Security.AccessControl;
+using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 
 namespace ShapeShifter
 {
     public static class ShapeShifter
     {
+        private static List<MapFeature> Features = JsonConvert.DeserializeObject<List<MapFeature>>(File.ReadAllText(@"D:\\_Projects_\\ShapeShifter\\Data\\FeatureCodes.json"));
+
         /* Collect all shape files and returns a single ShapeFile object
          * 
          */
@@ -135,6 +141,18 @@ namespace ShapeShifter
         private static void ProcessShapeCacheRecords(BinReader reader, ShapeCache shapeCache)
         {
             var recordIdCheck = 1;
+            var dbf = new Dbf();
+            var dbaseFile = Path.ChangeExtension(shapeCache.FilePath, ".dbf");
+            dbf.Read(dbaseFile);
+
+            var featCodeName = "FEATCODE";
+            var field = dbf.Fields.Where(f => f.Name == featCodeName).FirstOrDefault();
+            var featId = -1;
+
+            if (field != null)
+            {
+                featId = dbf.Fields.IndexOf(field);
+            }
 
             while (reader.Position < reader.Length)
             {
@@ -156,7 +174,17 @@ namespace ShapeShifter
                     RecordId = recordId,
                     FileOffset = currentPos
                 };
-                
+
+                if (featId >= 0)
+                {
+                    var featCode = Convert.ToInt32(dbf.Records[recordId - 1].Data[featId]);
+                    var feat = Features.Find(x => x.FeatCode == featCode);
+                    if (feat != null)
+                    {
+                        cacheItem.FeatureColor = feat.RGBColor;
+                    }
+                }
+
                 switch (shapeType)
                 {
                     // empty record
@@ -480,7 +508,9 @@ namespace ShapeShifter
                             shapeFile.PolyLines.Add(ReadPolyLine(reader));
                             break;
                         case ShapeType.Polygon:
-                            shapeFile.Polygons.Add(ReadPolyGon(reader));
+                            var poly = ReadPolyGon(reader);
+                            poly.Color = item.FeatureColor;
+                            shapeFile.Polygons.Add(poly);
                             break;
                         default:
                             //Console.WriteLine($"Unsupported record type {shapeType} - skipping {recordLength} bytes");
