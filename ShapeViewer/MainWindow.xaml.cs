@@ -19,18 +19,19 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ShapeViewer
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : System.Windows.Window
     {
         private ShapeManager _shapeManager;
         private double _windowRatioY;
         private string _folder;
-        private double _meters;
+        private double _metersPerPixel;
         private System.Windows.Shapes.Rectangle _viewWindow;
         private bool _rendering = false;
 
@@ -38,15 +39,9 @@ namespace ShapeViewer
         {
             InitializeComponent();
 
-            _meters = 1.0;
+            _metersPerPixel = 1.0;
             _windowX = 0.5;
             _windowY = 0.5;
-
-            _trRot = new RotateTransform(0);
-            _trGrp = new TransformGroup();
-            _trGrp.Children.Add(_trRot);
-
-            _mapView.RenderTransform = _trGrp;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -73,6 +68,11 @@ namespace ShapeViewer
                     _folder = path;
                     ShowStats();
                     SetViewWindow();
+
+                    _windowX = 0.5;
+                    _windowY = 0.5;
+                    ZoomSlider_ValueChanged(null, new RoutedPropertyChangedEventArgs<double>(1,1));
+                    SetNewArea();
                 }
             }
         }
@@ -86,7 +86,7 @@ namespace ShapeViewer
             var viewHeightPercent = _shapeManager.Height / _shapeManager.Width;
             var newHeight = _windowSize * viewHeightPercent;
             
-            var viewPortSize = _meters / _shapeManager.Width * _windowSize;
+            var viewPortSize = _metersPerPixel / _shapeManager.Width * _windowSize;
 
             _canvas.Width = _windowSize;
             _canvas.Height = newHeight;
@@ -134,11 +134,17 @@ namespace ShapeViewer
             if (!_rendering)
             {
                 _rendering = true;
+                //var metersX = _mapViewGrid.RenderSize.Width / _shapeManager.Width * _metersPerPixel;
+                //var metersY = _mapViewGrid.RenderSize.Height / _shapeManager.Height * _metersPerPixel;
 
-                var xmin = _shapeManager.Xmin + (_windowX * _shapeManager.Width) - (_meters / 2);
-                var xmax = xmin + _meters;
-                var ymin = _shapeManager.Ymin + (_windowY * _shapeManager.Height) - (_meters / 2);
-                var ymax = ymin + _meters;
+                var metersX = _metersPerPixel;
+                var scaleY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
+                var metersY = _metersPerPixel * scaleY;
+
+                var xmin = _shapeManager.Xmin + (_windowX * _shapeManager.Width) - (metersX / 2);
+                var xmax = xmin + metersX;
+                var ymin = _shapeManager.Ymin + (_windowY * _shapeManager.Height) - (metersY / 2);
+                var ymax = ymin + metersY;
 
                 var box = new BoundingBox()
                 {
@@ -162,9 +168,9 @@ namespace ShapeViewer
                 //ImageDump.StretchDirection = StretchDirection.Both;
 
                 //var shapeTest = ShapeShifter.ShapeShifter.MergeAllShapeFiles(_folder);
-                var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, (int)_mapView.Width, (int)_mapView.Height);
-
-
+                var width = (int)_mapViewGrid.RenderSize.Width;
+                var height = (int)_mapViewGrid.RenderSize.Height;
+                var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, width, height);
                 
                 using (MemoryStream memory = new MemoryStream())
                 {
@@ -176,7 +182,8 @@ namespace ShapeViewer
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.EndInit();
                     //ImageDump.Source = bitmapImage;
-                    _mapView.Fill = new ImageBrush(bitmapImage);
+                    ((System.Windows.Controls.Image)_mapViewGrid.Child).Source = bitmapImage;
+                    //_mapViewGrid.Fill = new ImageBrush(bitmapImage);
                 }
                 _rendering = false;
             }
@@ -191,6 +198,7 @@ namespace ShapeViewer
         private System.Windows.Point _startPoint;
         private double _windowX;
         private double _windowY;
+        private double _posMetersX;
 
         private void ViewWindow_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -242,8 +250,8 @@ namespace ShapeViewer
 
         private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            _meters = e.NewValue * 1000 < 1 ? 1 : e.NewValue * 1000;
-            ZoomVal.Text = string.Format("{0:0.00}", _meters);
+            _metersPerPixel = e.NewValue * 1000 < 1 ? 1 : e.NewValue * 1000;
+            ZoomVal.Text = string.Format("{0:0.00}", _metersPerPixel);
             SetViewWindow();
             SetNewArea();
         }
@@ -253,22 +261,22 @@ namespace ShapeViewer
 
         }
 
-        private TransformGroup _trGrp;
-        private RotateTransform _trRot;
-
-        private void MapView_MouseDown(object sender, MouseButtonEventArgs e)
+        private void _mapViewGrid_Refresh(object sender, PanZoomRefreshEventArgs e)
         {
-            /*
-            var img = (System.Windows.Shapes.Rectangle)sender;
-            var pos = Mouse.GetPosition(img);
-            PosX.Text = pos.X.ToString();   
-            PosY.Text = pos.Y.ToString();
-            _trRot.CenterX = 0;
-            _trRot.CenterY = 0;
-            _trRot.Angle = pos.X;
-            */
+            var currentX = _windowX * _shapeManager.Width;
+            var scaleX = _metersPerPixel / _mapViewGrid.RenderSize.Width;
+            currentX += (e.Pan.X * scaleX);
+            var distFractionX = currentX / _shapeManager.Width;
+            _windowX = distFractionX;
+
+            var currentY = _windowY * _shapeManager.Height;
+            var scaleY = _metersPerPixel / _mapViewGrid.RenderSize.Height;
+            currentY += (e.Pan.Y * scaleY);
+            var distFractionY = currentY / _shapeManager.Height;
+            _windowY = distFractionY;
+            
+            _mapViewGrid.Reset();
+            SetNewArea();
         }
-
-
     }
 }
