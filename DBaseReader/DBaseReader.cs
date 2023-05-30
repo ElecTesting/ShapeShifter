@@ -143,9 +143,16 @@ namespace DBaseReader
             throw new NotImplementedException();
         }
 
+        public double GetDouble(string fieldName)
+        {
+            return GetDouble(GetOrdinal(fieldName));
+        }
+
         public override double GetDouble(int ordinal)
         {
-            throw new NotImplementedException();
+            var data = GetFieldData(ordinal);
+            var stringData = Encoding.ASCII.GetString(data);
+            return Convert.ToDouble(stringData);
         }
 
         public override IEnumerator GetEnumerator()
@@ -175,8 +182,7 @@ namespace DBaseReader
 
         public int GetInt32(string fieldName)
         {
-            var ordinal = GetOrdinal(fieldName);
-            return GetInt32(ordinal);
+            return GetInt32(GetOrdinal(fieldName));
         }
 
         public override int GetInt32(int ordinal)

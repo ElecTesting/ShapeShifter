@@ -45,7 +45,7 @@ namespace ShapeRender
                 {
                     if (!string.IsNullOrWhiteSpace(item.TextString))
                     {
-                        DrawTextPoint(graphics, item.X, item.Y, shapeFile.BoundingBox, scale, item.TextString);
+                        DrawTextPoint(graphics, item, shapeFile.BoundingBox, scale);
                     }
                 }
             }
@@ -69,7 +69,6 @@ namespace ShapeRender
             {
                 newPoints.Add(new PointF((float)((point.X - box.Xmin) * scale), (float)((point.Y - box.Ymin) * scale)));
             }
-            //graphics.DrawPolygon(pen, newPoints.ToArray());
             graphics.FillPolygon(brush, newPoints.ToArray());
             graphics.DrawPolygon(pen, newPoints.ToArray());
         }
@@ -88,8 +87,6 @@ namespace ShapeRender
             //var p1 = new PointF((float)((x - box.Xmin) * scale), (float)((y - box.Ymin) * scale));
             //graphics.DrawRectangle(pen, p1.X, p1.Y, 1, 1);
             //graphics.DrawString("POINT!", new Font("Arial", 10), Brushes.HotPink, x, y);
-            
-
         }
 
         private static void DrawTextPoint(Graphics graphics, double x, double y, BoundingBoxHeader box, double scale, string textString)
@@ -98,8 +95,12 @@ namespace ShapeRender
             var p1 = new PointF((float)((x - box.Xmin) * scale), (float)((y - box.Ymin) * scale));
             //graphics.DrawRectangle(pen, p1.X, p1.Y, 1, 1);
             graphics.DrawString(textString, new Font("Courier New", 10), Brushes.Black, p1.X, p1.Y);
+        }
 
-
+        private static void DrawTextPoint(Graphics graphics, ShapePoint point, BoundingBoxHeader box, double scale)
+        {
+            var p1 = new PointF((float)((point.X - box.Xmin) * scale), (float)((point.Y - box.Ymin) * scale));
+            graphics.DrawString(point.TextString, new Font("Courier New", 10), Brushes.Black, p1.X, p1.Y);
         }
     }
 #pragma warning restore CA1416 // Validate platform compatibility

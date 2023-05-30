@@ -8,6 +8,7 @@ using System.Security.AccessControl;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using Newtonsoft.Json;
+using System.Data.Common;
 
 namespace ShapeShifter
 {
@@ -493,6 +494,16 @@ namespace ShapeShifter
             return shapeFile;
         }
 
+
+        private static int ColumnToOrdinal(DBaseReader.DBaseReader dbf, string columnName)
+        {
+            if (dbf.Columns.Where(c => c.Name == columnName).FirstOrDefault() != null)
+            {
+                return dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == columnName).First());
+            }
+            return -1;
+        }
+
         /* CacheToShape
          * 
          * takes a pre-trimmed cache file and converts it to a shape file
@@ -506,17 +517,9 @@ namespace ShapeShifter
                 using (var dbf = new DBaseReader.DBaseReader(cache.DbfPath))
                 {
                     // determine if the dbf file has the required columns
-                    var featCodeOrdinal = -1;
-                    if (dbf.Columns.Where(c => c.Name == "FEATCODE").FirstOrDefault() != null)
-                    {
-                        featCodeOrdinal = dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == "FEATCODE").First());
-                    }
-
-                    var textStringOrdinal = -1;
-                    if (dbf.Columns.Where(c => c.Name == "TEXTSTRING").FirstOrDefault() != null)
-                    {
-                        textStringOrdinal = dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == "TEXTSTRING").First());
-                    }
+                    var featCodeOrdinal = ColumnToOrdinal(dbf, "FEATCODE");
+                    var textStringOrdinal = ColumnToOrdinal(dbf, "TEXTSTRING");
+                    var textAngleOrdinal = ColumnToOrdinal(dbf, "TEXTANGLE");
 
                     foreach (var item in cache.Items)
                     {
@@ -538,8 +541,12 @@ namespace ShapeShifter
                                 if (textStringOrdinal >= 0)
                                 {
                                     point.TextString = dbf.GetString(textStringOrdinal);
-                                    shapeFile.Points.Add(point);
                                 }
+                                if (textAngleOrdinal >= 0)
+                                {
+                                    point.TextAngle = dbf.GetDouble(textAngleOrdinal);
+                                }
+                                shapeFile.Points.Add(point);
                                 break;
                             case ShapeType.PolyLine:
                                 shapeFile.PolyLines.Add(ReadPolyLine(reader));

@@ -34,6 +34,7 @@ namespace ShapeViewer
         private double _metersPerPixel;
         private System.Windows.Shapes.Rectangle _viewWindow;
         private bool _rendering = false;
+        private bool _fileLoaded = false;
 
         public MainWindow()
         {
@@ -67,46 +68,14 @@ namespace ShapeViewer
                     _shapeManager = new ShapeManager(path);
                     _folder = path;
                     ShowStats();
-                    SetViewWindow();
 
                     _windowX = 0.5;
                     _windowY = 0.5;
-                    ZoomSlider_ValueChanged(null, new RoutedPropertyChangedEventArgs<double>(1,1));
+                    _fileLoaded = true;
+                    ZoomSlider_ValueChanged(null, new RoutedPropertyChangedEventArgs<double>(0,1));
                     SetNewArea();
                 }
             }
-        }
-
-        private const int _windowSize = 500;
-
-        // MouseLeftButtonDown="WinDown" MouseMove="WinMove" MouseLeftButtonUp="WinUp" 
-
-        private void SetViewWindow()
-        {
-            var viewHeightPercent = _shapeManager.Height / _shapeManager.Width;
-            var newHeight = _windowSize * viewHeightPercent;
-            
-            var viewPortSize = _metersPerPixel / _shapeManager.Width * _windowSize;
-
-            _canvas.Width = _windowSize;
-            _canvas.Height = newHeight;
-            _canvas.Background = System.Windows.Media.Brushes.LightGray;
-            _canvas.Children.Clear();
-
-            // how do you programatically add controls to a WPF window?
-            _viewWindow = new System.Windows.Shapes.Rectangle();
-            _viewWindow.Width = viewPortSize;
-            _viewWindow.Height = viewPortSize;
-            _viewWindow.Fill = new SolidColorBrush(Colors.RoyalBlue);
-            // assign handlers
-            _viewWindow.MouseDown += ViewWindow_MouseDown;
-            _viewWindow.MouseMove += ViewWindow_MouseMove;
-            _viewWindow.MouseUp += ViewWindow_MouseUp;
-            
-            Canvas.SetLeft(_viewWindow, (_canvas.Width * _windowX) - _viewWindow.Width/2);
-            Canvas.SetTop(_viewWindow, (_canvas.Height * _windowY) - _viewWindow.Height/2);
-
-            _canvas.Children.Add(_viewWindow);
         }
 
         private void ShowStats()
@@ -120,17 +89,15 @@ namespace ShapeViewer
             HeightText.Text = _shapeManager.Height.ToString();
             //_windowX = _shapeManager.Width / 2;
             //_windowY = _shapeManager.Height / 2;
-            UpdatePos();
-        }
-
-        private void UpdatePos()
-        {
-            PosX.Text = $"{_windowX * _shapeManager.Width}";
-            PosY.Text = $"{_windowY * _shapeManager.Height}";
         }
 
         private void SetNewArea()
         {
+            if (!_fileLoaded)
+            {
+                return;
+            }
+
             if (!_rendering)
             {
                 _rendering = true;
@@ -140,6 +107,7 @@ namespace ShapeViewer
                 var metersX = _metersPerPixel;
                 var scaleY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
                 var metersY = _metersPerPixel * scaleY;
+
 
                 var xmin = _shapeManager.Xmin + (_windowX * _shapeManager.Width) - (metersX / 2);
                 var xmax = xmin + metersX;
@@ -200,59 +168,10 @@ namespace ShapeViewer
         private double _windowY;
         private double _posMetersX;
 
-        private void ViewWindow_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            _drag = true;
-            // save start point of dragging
-            _startPoint = Mouse.GetPosition(_canvas);
-        }
-
-        private void ViewWindow_MouseMove(object sender, MouseEventArgs e)
-        {
-            // if dragging, then adjust rectangle position based on mouse movement
-            if (_drag)
-            {
-                var draggedRectangle = (System.Windows.Shapes.Rectangle)sender;
-                var newPoint = Mouse.GetPosition(_canvas);
-
-                double left = Canvas.GetLeft(draggedRectangle);
-                double top = Canvas.GetTop(draggedRectangle);
-
-                if (left >= 0 && left <= _canvas.Width - draggedRectangle.Width)
-                {
-                    Canvas.SetLeft(draggedRectangle, left + (newPoint.X - _startPoint.X));
-                    _startPoint.X = newPoint.X;
-                }
-
-                if (top >= 0 && top <= _canvas.Height - draggedRectangle.Height)
-                {
-                    Canvas.SetTop(draggedRectangle, top + (newPoint.Y - _startPoint.Y));
-                    _startPoint.Y = newPoint.Y; 
-                }
-
-                _windowX = ((Canvas.GetLeft(draggedRectangle) + (draggedRectangle.Width / 2)) / _canvas.Width);
-                _windowY = ((Canvas.GetTop(draggedRectangle) + (draggedRectangle.Height / 2)) / _canvas.Height);
-                PosX.Text = _windowX.ToString();
-                PosY.Text = _windowY.ToString();
-                SetNewArea();
-
-                //_startPoint = newPoint;
-            }
-        }
-        
-        private void ViewWindow_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            // stop dragging
-            var draggedRectangle = (System.Windows.Shapes.Rectangle)sender;
-            SetNewArea();
-            _drag = false;
-        }
-
         private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             _metersPerPixel = e.NewValue * 1000 < 1 ? 1 : e.NewValue * 1000;
             ZoomVal.Text = string.Format("{0:0.00}", _metersPerPixel);
-            SetViewWindow();
             SetNewArea();
         }
 
@@ -269,9 +188,11 @@ namespace ShapeViewer
             var distFractionX = currentX / _shapeManager.Width;
             _windowX = distFractionX;
 
+            var aspectY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
+
             var currentY = _windowY * _shapeManager.Height;
             var scaleY = _metersPerPixel / _mapViewGrid.RenderSize.Height;
-            currentY += (e.Pan.Y * scaleY);
+            currentY += (e.Pan.Y * scaleY) * aspectY;
             var distFractionY = currentY / _shapeManager.Height;
             _windowY = distFractionY;
             

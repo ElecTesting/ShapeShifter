@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShapeViewer"
         mc:Ignorable="d"
-        Title="Shape Viewer" Height="600" Width="1400">
+        Title="Shape Viewer" Height="580" Width="1400">
     <Grid Name="GridControls" Margin="0,0,0
 ,0">
-        <Slider Name="ZoomSlider" HorizontalAlignment="Left" Height="17" Margin="-120,219,0,0" VerticalAlignment="Top" Width="296" RenderTransformOrigin="0.5,0.5" ValueChanged="ZoomSlider_ValueChanged" Minimum="0" Maximum="1">
+        <Slider Name="ZoomSlider" HorizontalAlignment="Left" Height="17" Margin="-123,174,0,0" VerticalAlignment="Top" Width="296" RenderTransformOrigin="0.5,0.5" ValueChanged="ZoomSlider_ValueChanged" Minimum="0" Maximum="1">
             <Slider.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -18,44 +18,37 @@
                 </TransformGroup>
             </Slider.RenderTransform>
         </Slider>
-        <Button Content="Open Shape Folder" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="26" Width="124" Click="Button_Click"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,39,0,0" TextWrapping="Wrap" Text="Xmin" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,60,0,0" TextWrapping="Wrap" Text="Xmax" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,81,0,0" TextWrapping="Wrap" Text="Ymin" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,102,0,0" TextWrapping="Wrap" Text="Ymax" VerticalAlignment="Top" Width="40"/>
-        <TextBlock Name="XminView" HorizontalAlignment="Left" Margin="1248,39,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock Name="XmaxView" HorizontalAlignment="Left" Margin="1248,60,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock Name="YminView" HorizontalAlignment="Left" Margin="1248,81,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock Name="YmaxView" HorizontalAlignment="Left" Margin="1248,102,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,18,0,0" TextWrapping="Wrap" Text="Total Map Area" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,198,0,0" TextWrapping="Wrap" Text="Xmin" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,219,0,0" TextWrapping="Wrap" Text="Xmax" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,240,0,0" TextWrapping="Wrap" Text="Ymin" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,260,0,0" TextWrapping="Wrap" Text="Ymax" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,177,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="View "/><Run Text="Map Area"/></TextBlock>
-        <TextBox Name="TextAreaXmin" HorizontalAlignment="Left" Margin="1248,198,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBox Name="TextAreaXmax" HorizontalAlignment="Left" Margin="1248,219,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBox Name="TextAreaYmin" HorizontalAlignment="Left" Margin="1248,240,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBox Name="TextAreaYmax" HorizontalAlignment="Left" Margin="1248,260,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,123,0,0" TextWrapping="Wrap" Text="Items" VerticalAlignment="Top" Width="40"/>
-        <TextBlock Name="Items" HorizontalAlignment="Left" Margin="1248,123,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,278,0,0" TextWrapping="Wrap" Text="Items" VerticalAlignment="Top" Width="40"/>
-        <TextBlock Name="ItemsArea" HorizontalAlignment="Left" Margin="1248,278,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <Button Content="Set Area" HorizontalAlignment="Left" Margin="1208,306,0,0" VerticalAlignment="Top" Width="110" Height="34" Click="Button_SetArea"/>
-        <TextBlock HorizontalAlignment="Left" Margin="148,15,0,0" TextWrapping="Wrap" Text="PosX" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="148,36,0,0" TextWrapping="Wrap" Text="PosY" VerticalAlignment="Top"/>
-        <TextBlock Name="PosX" HorizontalAlignment="Left" Margin="202,16,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock Name="PosY" HorizontalAlignment="Left" Margin="202,37,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,139,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="40"><Run Language="en-gb" Text="Width"/></TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="1208,155,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="40" RenderTransformOrigin="0.5,2.102"><Run Language="en-gb" Text="Height"/></TextBlock>
-        <TextBlock x:Name="WidthText" HorizontalAlignment="Left" Margin="1248,139,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock x:Name="HeightText" HorizontalAlignment="Left" Margin="1248,156,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock x:Name="ZoomVal" HorizontalAlignment="Left" Margin="23,50,0,0" TextWrapping="Wrap" Text="ZoomVal" VerticalAlignment="Top"/>
-        <Button Content="Get Area" HorizontalAlignment="Left" Margin="1208,345,0,0" VerticalAlignment="Top" Width="110" Height="34" Click="Button_GetArea"/>
-        <Canvas Name="_canvas" HorizontalAlignment="Left" Height="229" Margin="61,81,0,0" VerticalAlignment="Top" Width="204" RenderTransformOrigin="0.5,0.5"/>
+        <Button Content="Open Shape Folder" HorizontalAlignment="Left" Margin="909,21,0,0" VerticalAlignment="Top" Height="26" Width="124" Click="Button_Click"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,78,0,0" TextWrapping="Wrap" Text="Xmin" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,99,0,0" TextWrapping="Wrap" Text="Xmax" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,120,0,0" TextWrapping="Wrap" Text="Ymin" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,141,0,0" TextWrapping="Wrap" Text="Ymax" VerticalAlignment="Top" Width="40"/>
+        <TextBlock Name="XminView" HorizontalAlignment="Left" Margin="956,78,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
+        <TextBlock Name="XmaxView" HorizontalAlignment="Left" Margin="956,99,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
+        <TextBlock Name="YminView" HorizontalAlignment="Left" Margin="956,120,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
+        <TextBlock Name="YmaxView" HorizontalAlignment="Left" Margin="956,141,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,57,0,0" TextWrapping="Wrap" Text="Total Map Area" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,237,0,0" TextWrapping="Wrap" Text="Xmin" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,258,0,0" TextWrapping="Wrap" Text="Xmax" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,279,0,0" TextWrapping="Wrap" Text="Ymin" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,299,0,0" TextWrapping="Wrap" Text="Ymax" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,216,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="View "/><Run Text="Map Area"/></TextBlock>
+        <TextBlock Name="TextAreaXmin" HorizontalAlignment="Left" Margin="956,237,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <TextBlock Name="TextAreaXmax" HorizontalAlignment="Left" Margin="956,258,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <TextBlock Name="TextAreaYmin" HorizontalAlignment="Left" Margin="956,279,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <TextBlock Name="TextAreaYmax" HorizontalAlignment="Left" Margin="956,299,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,162,0,0" TextWrapping="Wrap" Text="Items" VerticalAlignment="Top" Width="40"/>
+        <TextBlock Name="Items" HorizontalAlignment="Left" Margin="956,162,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,317,0,0" TextWrapping="Wrap" Text="Items" VerticalAlignment="Top" Width="40"/>
+        <TextBlock Name="ItemsArea" HorizontalAlignment="Left" Margin="956,317,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,178,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="40"><Run Language="en-gb" Text="Width"/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="916,194,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="40" RenderTransformOrigin="0.5,2.102"><Run Language="en-gb" Text="Height"/></TextBlock>
+        <TextBlock x:Name="WidthText" HorizontalAlignment="Left" Margin="956,178,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
+        <TextBlock x:Name="HeightText" HorizontalAlignment="Left" Margin="956,195,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
+        <TextBlock x:Name="ZoomVal" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Zoom" VerticalAlignment="Top"/>
 
-        <local:ZoomBorder x:Name="_mapViewGrid" ClipToBounds="True" Background="Gray" Margin="600,40,0,0" Refresh="_mapViewGrid_Refresh" Height="500" VerticalAlignment="Top" HorizontalAlignment="Left" Width="500">
-            <Image Source="image.jpg" Height="500" VerticalAlignment="Top"/>
+        <local:ZoomBorder x:Name="_mapViewGrid" ClipToBounds="True" Background="Gray" Margin="64,18,0,0" Refresh="_mapViewGrid_Refresh" Height="500" VerticalAlignment="Top" HorizontalAlignment="Left" Width="825">
+            <Image Height="500" VerticalAlignment="Center" Margin="0,0,0,0"/>
         </local:ZoomBorder>
     </Grid>
 </Window>
