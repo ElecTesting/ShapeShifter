@@ -9,5 +9,6 @@ namespace ShapeShifter.Storage
     public class ShapeObject
     {
         public BoundingBox Box { get; set; } = new BoundingBox();
+        public string TextString { get; set; } = "";
     }
 }

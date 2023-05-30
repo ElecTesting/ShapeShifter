@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DBaseReader\DBaseReader.csproj" />
     <ProjectReference Include="..\ShapeRender\ShapeRender.csproj" />
     <ProjectReference Include="..\ShapeShifter\ShapeShifter.csproj" />
   </ItemGroup>

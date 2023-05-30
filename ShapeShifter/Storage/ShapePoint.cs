@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShapeShifter.Storage
 {
-    public class ShapePoint
+    public class ShapePoint : ShapeObject
     {
         public double X { get; set; }
         public double Y { get; set; }

@@ -51,8 +51,10 @@
         <TextBlock x:Name="WidthText" HorizontalAlignment="Left" Margin="1248,139,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
         <TextBlock x:Name="HeightText" HorizontalAlignment="Left" Margin="1248,156,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
         <TextBlock x:Name="ZoomVal" HorizontalAlignment="Left" Margin="23,50,0,0" TextWrapping="Wrap" Text="ZoomVal" VerticalAlignment="Top"/>
-        <Image Name="ImageDump" HorizontalAlignment="Left" Height="552" Margin="562,24,0,0" VerticalAlignment="Top" Width="614" MouseDown="ImageDump_MouseDown"/>
         <Button Content="Get Area" HorizontalAlignment="Left" Margin="1208,345,0,0" VerticalAlignment="Top" Width="110" Height="34" Click="Button_GetArea"/>
         <Canvas Name="_canvas" HorizontalAlignment="Left" Height="229" Margin="61,81,0,0" VerticalAlignment="Top" Width="204" RenderTransformOrigin="0.5,0.5"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="382" Margin="678,26,0,0" VerticalAlignment="Top" Width="525">
+            <Rectangle x:Name="_mapView" HorizontalAlignment="Center" Height="362" Stroke="Black" VerticalAlignment="Center" Width="505" MouseDown="MapView_MouseDown"/>
+        </Border>
     </Grid>
 </Window>

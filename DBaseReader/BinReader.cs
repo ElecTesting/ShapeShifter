@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShapeShifter
+namespace DBaseReader
 {
     public class BinReader : BinaryReader
     {
@@ -68,6 +68,7 @@ namespace ShapeShifter
             return Encoding.ASCII.GetString(data);
         }
 
+
         public void Move(long bytes)
         {
             var newPosition = BaseStream.Position + bytes;
@@ -97,5 +98,6 @@ namespace ShapeShifter
             }
             return false;
         }
+
     }
 }

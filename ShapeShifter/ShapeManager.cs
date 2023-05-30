@@ -68,6 +68,7 @@ namespace ShapeShifter
                     var thisCache = new ShapeCache()
                     {
                         FilePath = cache.FilePath,
+                        DbfPath = cache.DbfPath,
                     };
                     _area.Add(thisCache);
 

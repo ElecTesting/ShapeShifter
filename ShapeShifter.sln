@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestConsole", "TestConsole\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShapeRender", "ShapeRender\ShapeRender.csproj", "{DCF11162-0A3C-46B9-AD6C-83D1245AACCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShapeViewer", "ShapeViewer\ShapeViewer.csproj", "{2428C054-7BB6-45D4-B709-3951C00A13B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShapeViewer", "ShapeViewer\ShapeViewer.csproj", "{2428C054-7BB6-45D4-B709-3951C00A13B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBaseReader", "DBaseReader\DBaseReader.csproj", "{BEAE441F-C222-4C7F-BA7E-37BE74E3F584}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{2428C054-7BB6-45D4-B709-3951C00A13B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2428C054-7BB6-45D4-B709-3951C00A13B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2428C054-7BB6-45D4-B709-3951C00A13B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEAE441F-C222-4C7F-BA7E-37BE74E3F584}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEAE441F-C222-4C7F-BA7E-37BE74E3F584}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEAE441F-C222-4C7F-BA7E-37BE74E3F584}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEAE441F-C222-4C7F-BA7E-37BE74E3F584}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

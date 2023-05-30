@@ -1,5 +1,4 @@
-﻿using dBASE.NET;
-using ShapeShifter.Storage;
+﻿using ShapeShifter.Storage;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
@@ -14,6 +13,7 @@ namespace ShapeShifter
 {
     public static class ShapeShifter
     {
+        // TODO: Move to config
         private static List<MapFeature> Features = JsonConvert.DeserializeObject<List<MapFeature>>(File.ReadAllText(@"D:\\_Projects_\\ShapeShifter\\Data\\FeatureCodes.json"));
 
         /* Collect all shape files and returns a single ShapeFile object
@@ -124,7 +124,8 @@ namespace ShapeShifter
             var shapeCache = new ShapeCache()
             {
                 BoundingBox = shapeFile.BoundingBox,
-                FilePath = filePath
+                FilePath = filePath,
+                DbfPath = Path.ChangeExtension(filePath, ".dbf")
             };
 
             ProcessShapeCacheRecords(reader, shapeCache);
@@ -141,74 +142,80 @@ namespace ShapeShifter
         private static void ProcessShapeCacheRecords(BinReader reader, ShapeCache shapeCache)
         {
             var recordIdCheck = 1;
-            var dbf = new Dbf();
             var dbaseFile = Path.ChangeExtension(shapeCache.FilePath, ".dbf");
-            dbf.Read(dbaseFile);
 
-            var featCodeName = "FEATCODE";
-            var field = dbf.Fields.Where(f => f.Name == featCodeName).FirstOrDefault();
-            var featId = -1;
-
-            if (field != null)
+            using (var dbf = new DBaseReader.DBaseReader(dbaseFile))
             {
-                featId = dbf.Fields.IndexOf(field);
-            }
-
-            while (reader.Position < reader.Length)
-            {
-                var recordId = reader.ReadInt32BE();
-                if (recordId != recordIdCheck)
+                var featCodeOrdinal = -1;
+                if (dbf.Columns.Where(c => c.Name == "FEATCODE").FirstOrDefault() != null)
                 {
-                    throw new Exception("Error walking file, record id mismatch");
+                    featCodeOrdinal = dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == "FEATCODE").First());
                 }
 
-                var recordLength = reader.ReadInt32BE() * 2;
-
-                var currentPos = reader.Position;
-                var nextRecord = currentPos + recordLength;
-
-                var shapeType = (ShapeType)reader.ReadInt32();
-
-                var cacheItem = new ShapeCacheItem()
+                var textStringOrdinal = -1;
+                if (dbf.Columns.Where(c => c.Name == "TEXTSTRING").FirstOrDefault() != null)
                 {
-                    RecordId = recordId,
-                    FileOffset = currentPos
-                };
+                    textStringOrdinal = dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == "TEXTSTRING").First());
+                }
 
-                if (featId >= 0)
+                while (reader.Position < reader.Length)
                 {
-                    var featCode = Convert.ToInt32(dbf.Records[recordId - 1].Data[featId]);
-                    var feat = Features.Find(x => x.FeatCode == featCode);
-                    if (feat != null)
+                    var recordId = reader.ReadInt32BE();
+                    if (recordId != recordIdCheck)
                     {
-                        cacheItem.FeatureColor = feat.RGBColor;
+                        throw new Exception("Error walking file, record id mismatch");
                     }
+
+                    var recordLength = reader.ReadInt32BE() * 2;
+
+                    var currentPos = reader.Position;
+                    var nextRecord = currentPos + recordLength;
+
+                    var shapeType = (ShapeType)reader.ReadInt32();
+
+                    var cacheItem = new ShapeCacheItem()
+                    {
+                        RecordId = recordId,
+                        FileOffset = currentPos
+                    };
+
+                    if (featCodeOrdinal >= 0)
+                    {
+                        var featCode = Convert.ToInt32(dbf.GetInt32(featCodeOrdinal));
+                        var feat = Features.Find(x => x.FeatCode == featCode);
+                        if (feat != null)
+                        {
+                            cacheItem.FeatureColor = feat.RGBColor;
+                        }
+                    }
+
+                    switch (shapeType)
+                    {
+                        // empty record
+                        case ShapeType.NullShape:
+                            break;
+                        case ShapeType.Point:
+                            //shapeFile.Points.Add(ReadPointRecord(reader));
+                            cacheItem.Box = ReadPointRecordAsBox(reader);
+                            break;
+                        case ShapeType.PolyLine:
+                        case ShapeType.Polygon:
+                            cacheItem.Box = ReadBoundingBox(reader);
+                            break;
+                        default:
+                            Console.WriteLine($"Unsupported record type {shapeType} - skipping {recordLength} bytes");
+                            reader.Move(recordLength - 4);
+                            break;
+                    };
+
+                    shapeCache.Items.Add(cacheItem);
+
+                    reader.BaseStream.Position = nextRecord;
+
+                    recordIdCheck++;
+
+                    dbf.NextResult();
                 }
-
-                switch (shapeType)
-                {
-                    // empty record
-                    case ShapeType.NullShape:
-                        break;
-                    case ShapeType.Point:
-                        //shapeFile.Points.Add(ReadPointRecord(reader));
-                        cacheItem.Box = ReadPointRecordAsBox(reader);
-                        break;
-                    case ShapeType.PolyLine:
-                    case ShapeType.Polygon:
-                        cacheItem.Box = ReadBoundingBox(reader);
-                        break;
-                    default:
-                        Console.WriteLine($"Unsupported record type {shapeType} - skipping {recordLength} bytes");
-                        reader.Move(recordLength - 4);
-                        break;
-                };
-
-                shapeCache.Items.Add(cacheItem);
-
-                reader.BaseStream.Position = nextRecord;
-
-                recordIdCheck++;
             }
         }
 
@@ -486,37 +493,66 @@ namespace ShapeShifter
             return shapeFile;
         }
 
+        /* CacheToShape
+         * 
+         * takes a pre-trimmed cache file and converts it to a shape file
+         * adding the additional meta data from the dbf files
+         */
+
         private static void CacheToShape(ShapeCache cache, ShapeFile shapeFile)
         {
             using (var reader = new BinReader(new FileStream(cache.FilePath, FileMode.Open, FileAccess.Read)))
             {
-                foreach (var item in cache.Items)
+                using (var dbf = new DBaseReader.DBaseReader(cache.DbfPath))
                 {
-                    reader.BaseStream.Position = item.FileOffset;
-
-                    var shapeType = (ShapeType)reader.ReadInt32();
-
-                    switch (shapeType)
+                    // determine if the dbf file has the required columns
+                    var featCodeOrdinal = -1;
+                    if (dbf.Columns.Where(c => c.Name == "FEATCODE").FirstOrDefault() != null)
                     {
-                        // empty record
-                        case ShapeType.NullShape:
-                            break;
-                        case ShapeType.Point:
-                            shapeFile.Points.Add(ReadPointRecord(reader));
-                            break;
-                        case ShapeType.PolyLine:
-                            shapeFile.PolyLines.Add(ReadPolyLine(reader));
-                            break;
-                        case ShapeType.Polygon:
-                            var poly = ReadPolyGon(reader);
-                            poly.Color = item.FeatureColor;
-                            shapeFile.Polygons.Add(poly);
-                            break;
-                        default:
-                            //Console.WriteLine($"Unsupported record type {shapeType} - skipping {recordLength} bytes");
-                            //reader.Move(recordLength - 4);
-                            break;
-                    };
+                        featCodeOrdinal = dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == "FEATCODE").First());
+                    }
+
+                    var textStringOrdinal = -1;
+                    if (dbf.Columns.Where(c => c.Name == "TEXTSTRING").FirstOrDefault() != null)
+                    {
+                        textStringOrdinal = dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == "TEXTSTRING").First());
+                    }
+
+                    foreach (var item in cache.Items)
+                    {
+                        // move to the correct position in the shape binday file
+                        reader.Goto(item.FileOffset);
+
+                        // move dbf to correct record
+                        dbf.GotoRow(item.RecordId - 1);
+
+                        var shapeType = (ShapeType)reader.ReadInt32();
+
+                        switch (shapeType)
+                        {
+                            // empty record
+                            case ShapeType.NullShape:
+                                break;
+                            case ShapeType.Point:
+                                var point = ReadPointRecord(reader);
+                                if (textStringOrdinal >= 0)
+                                {
+                                    point.TextString = dbf.GetString(textStringOrdinal);
+                                    shapeFile.Points.Add(point);
+                                }
+                                break;
+                            case ShapeType.PolyLine:
+                                shapeFile.PolyLines.Add(ReadPolyLine(reader));
+                                break;
+                            case ShapeType.Polygon:
+                                var poly = ReadPolyGon(reader);
+                                poly.Color = item.FeatureColor;
+                                shapeFile.Polygons.Add(poly);
+                                break;
+                            default:
+                                break;
+                        };
+                    }
                 }
             }
         }

@@ -13,6 +13,6 @@ namespace ShapeShifter.Storage
         public long FileOffset { get; set; } 
         public BoundingBox Box { get; set; } = new BoundingBox();
         public int FeatCode { get; set; }
-        public Color FeatureColor { get; set; } = Color.White;
+        public Color FeatureColor { get; set; } = Color.Black;
     }
 }

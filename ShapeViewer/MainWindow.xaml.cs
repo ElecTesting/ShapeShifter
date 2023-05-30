@@ -41,6 +41,12 @@ namespace ShapeViewer
             _meters = 1.0;
             _windowX = 0.5;
             _windowY = 0.5;
+
+            _trRot = new RotateTransform(0);
+            _trGrp = new TransformGroup();
+            _trGrp.Children.Add(_trRot);
+
+            _mapView.RenderTransform = _trGrp;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -152,12 +158,14 @@ namespace ShapeViewer
 
                 var areaOnly = _shapeManager.GetArea();
 
-                ImageDump.Stretch = Stretch.Uniform;
-                ImageDump.StretchDirection = StretchDirection.Both;
+                //ImageDump.Stretch = Stretch.Uniform;
+                //ImageDump.StretchDirection = StretchDirection.Both;
 
                 //var shapeTest = ShapeShifter.ShapeShifter.MergeAllShapeFiles(_folder);
-                var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, (int)ImageDump.Width, (int)ImageDump.Height);
+                var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, (int)_mapView.Width, (int)_mapView.Height);
 
+
+                
                 using (MemoryStream memory = new MemoryStream())
                 {
                     testImage.Save(memory, ImageFormat.Png);
@@ -167,7 +175,8 @@ namespace ShapeViewer
                     bitmapImage.StreamSource = memory;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.EndInit();
-                    ImageDump.Source = bitmapImage;
+                    //ImageDump.Source = bitmapImage;
+                    _mapView.Fill = new ImageBrush(bitmapImage);
                 }
                 _rendering = false;
             }
@@ -244,9 +253,22 @@ namespace ShapeViewer
 
         }
 
-        private void ImageDump_MouseDown(object sender, MouseButtonEventArgs e)
+        private TransformGroup _trGrp;
+        private RotateTransform _trRot;
+
+        private void MapView_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            ImageDump.RenderTransform(new TranslateTransform(10, 10));
+            /*
+            var img = (System.Windows.Shapes.Rectangle)sender;
+            var pos = Mouse.GetPosition(img);
+            PosX.Text = pos.X.ToString();   
+            PosY.Text = pos.Y.ToString();
+            _trRot.CenterX = 0;
+            _trRot.CenterY = 0;
+            _trRot.Angle = pos.X;
+            */
         }
+
+
     }
 }

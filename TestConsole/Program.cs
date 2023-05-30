@@ -9,18 +9,37 @@ using ShapeShifter.Storage;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing.Imaging;
 
-var shapeManager = new ShapeManager(@"D:\EsriData\Bradford\02_Renamed");
+var dbasefile = @"D:\EsriData\Bradford\02_Renamed\AR.dbf";
+//var dbasefile = @"D:\EsriData\Mundesley\MUNDSLEY_Buildings Or Structure Text_text.dbf";
 
-var area = new BoundingBox()
+
+// dbase reader testing
+using (var dbaseReader = new DBaseReader.DBaseReader(dbasefile))
 {
-   Xmin = 400000,
-   Xmax = 410000,
-   Ymin = 430000,
-   Ymax = 440000
-};
+    while (dbaseReader.HasRows)
+    {
+        var test = dbaseReader.GetInt32("FEATCODE");
+        //Console.WriteLine($"{test}");
+        //Console.WriteLine($"{dbaseReader.RowNumber}");
+        dbaseReader.NextResult();
+    }
+}
 
-var getCount = shapeManager.SetArea(area);
-Console.WriteLine($"Count: {getCount}");
+
+
+// shape shifter testing
+//var shapeManager = new ShapeManager(@"D:\EsriData\Bradford\02_Renamed");
+//
+//var area = new BoundingBox()
+//{
+//   Xmin = 400000,
+//   Xmax = 410000,
+//   Ymin = 430000,
+//   Ymax = 440000
+//};
+
+//var getCount = shapeManager.SetArea(area);
+//Console.WriteLine($"Count: {getCount}");
 
 //var shapeFile = ShapeShifter.ShapeShifter.MergeAllShapeFiles(@"D:\EsriData\Bradford\02_Renamed");
 //var image = ShapeRender.ShapeRender.RenderShapeFile(shapeFile, 0.25);
