@@ -21,6 +21,17 @@ namespace ShapeViewer
 
     public class ZoomBorder : Border
     {
+        public double AreaWidth { get; set; }  
+        public double AreaHeight { get; set; }
+        public double AreaScale { get; set; }
+        public double BoxWidth { get; set; }   
+        public double BoxHeight { get; set; }
+        public double BoxOriginX { get; set; }   
+        public double BoxOriginY { get; set; }
+        public double BoxX { get; set; }
+        public double BoxY { get; set; }
+
+
         private UIElement _child = null;
         private Point _origin;
         private Point _start;
@@ -38,7 +49,9 @@ namespace ShapeViewer
         }
 
         public event PanEventHandler Refresh;
-        
+        public event PanEventHandler Move;
+        public event PanEventHandler Zoom;
+
         public delegate void PanEventHandler(object? sender, PanZoomRefreshEventArgs e);
 
         protected virtual void OnRefresh(PanZoomRefreshEventArgs e)
@@ -46,6 +59,15 @@ namespace ShapeViewer
             Refresh?.Invoke(this, e);
         }
 
+        protected virtual void OnMove(PanZoomRefreshEventArgs e)
+        {
+            Move?.Invoke(this, e);
+        }
+
+        protected virtual void OnZoom(PanZoomRefreshEventArgs e)
+        {
+            Zoom?.Invoke(this, e);
+        }
         public override UIElement Child
         {
             get { return base.Child; }
@@ -69,7 +91,7 @@ namespace ShapeViewer
                 group.Children.Add(tt);
                 _child.RenderTransform = group;
                 _child.RenderTransformOrigin = new Point(0.0, 0.0);
-                this.MouseWheel += child_MouseWheel;
+                //this.MouseWheel += child_MouseWheel;
                 this.MouseLeftButtonDown += child_MouseLeftButtonDown;
                 this.MouseLeftButtonUp += child_MouseLeftButtonUp;
                 this.MouseMove += child_MouseMove;
@@ -104,7 +126,10 @@ namespace ShapeViewer
                 var tt = GetTranslateTransform(_child);
 
                 double zoom = e.Delta > 0 ? .2 : -.2;
-                if (!(e.Delta > 0) && (st.ScaleX < .4 || st.ScaleY < .4))
+                
+                //if (!(e.Delta > 0) && (st.ScaleX < .4 || st.ScaleY < .4))
+                //    return;
+                if (!(e.Delta > 0) && (AreaScale > 0 || AreaScale < 1))
                     return;
 
                 Point relative = e.GetPosition(_child);
@@ -119,6 +144,15 @@ namespace ShapeViewer
 
                 tt.X = absoluteX - relative.X * st.ScaleX;
                 tt.Y = absoluteY - relative.Y * st.ScaleY;
+
+                var newPos = new Point(tt.X, tt.Y);
+
+                AreaScale += zoom;
+                var pan = new PanZoomRefreshEventArgs()
+                {
+                    Pan = VectorClamp(newPos - e.GetPosition(this))
+                };
+                OnZoom(pan);
             }
         }
 
@@ -142,7 +176,7 @@ namespace ShapeViewer
                 this.Cursor = Cursors.Arrow;
                 var pan = new PanZoomRefreshEventArgs()
                 {
-                    Pan = _start - e.GetPosition(this) 
+                    Pan = VectorClamp(_start - e.GetPosition(this))
                 };
                 OnRefresh(pan);
             }
@@ -153,6 +187,41 @@ namespace ShapeViewer
             this.Reset();
         }
 
+        private Vector VectorClamp(Vector v)
+        {
+            var vScale = new Vector(v.X * AreaScale, v.Y * AreaScale);
+
+            var left = BoxOriginX - (BoxWidth / 2) + vScale.X;
+            var right = BoxOriginX + (BoxWidth / 2) + vScale.X;
+            var top = BoxOriginY + (BoxHeight / 2) - vScale.Y;
+            var bottom = BoxOriginY - (BoxHeight / 2) - vScale.Y;
+
+            if (left < 0)
+            {
+                v.X -= (left / AreaScale);
+            }
+
+            if (right > AreaWidth)
+            {
+                v.X -= (right - AreaWidth) / AreaScale;
+            }
+            
+            if (bottom < 0) 
+            { 
+                v.Y += (bottom / AreaScale); 
+            }
+            
+            if (top > AreaHeight)
+            {
+                v.Y += (top - AreaHeight) / AreaScale; 
+            }
+            
+            BoxX = BoxOriginX + v.X;
+            BoxY = BoxOriginY - v.Y;
+
+            return v;
+        }
+
         private void child_MouseMove(object sender, MouseEventArgs e)
         {
             if (_child != null)
@@ -160,9 +229,16 @@ namespace ShapeViewer
                 if (_child.IsMouseCaptured)
                 {
                     var tt = GetTranslateTransform(_child);
-                    Vector v = _start - e.GetPosition(this);
+                    Vector v = VectorClamp(_start - e.GetPosition(this));
+
                     tt.X = _origin.X - v.X;
                     tt.Y = _origin.Y - v.Y;
+
+                    var pan = new PanZoomRefreshEventArgs()
+                    {
+                        Pan = v
+                    };
+                    OnMove(pan);
                 }
             }
         }

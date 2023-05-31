@@ -20,9 +20,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Collections.ObjectModel;
 
 namespace ShapeViewer
 {
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -40,7 +42,8 @@ namespace ShapeViewer
         {
             InitializeComponent();
 
-            _metersPerPixel = 1.0;
+            _metersPerPixel = 1000;
+            
             _windowX = 0.5;
             _windowY = 0.5;
         }
@@ -65,6 +68,8 @@ namespace ShapeViewer
                 }
                 else
                 {
+                    GetFileItems(shapeFileList);
+
                     _shapeManager = new ShapeManager(path);
                     _folder = path;
                     ShowStats();
@@ -72,19 +77,38 @@ namespace ShapeViewer
                     _windowX = 0.5;
                     _windowY = 0.5;
                     _fileLoaded = true;
-                    ZoomSlider_ValueChanged(null, new RoutedPropertyChangedEventArgs<double>(0,1));
+                    ZoomSlider.Value = 1;
                     SetNewArea();
                 }
             }
         }
 
+        private void GetFileItems(string[] filePaths)
+        {
+            _shapeFiles.Items.Clear();
+
+            var items = new List<FileItem>();
+            foreach (var filePath in filePaths)
+            {
+                var fileItem = new FileItem()
+                {
+                    FilePath = filePath
+                };
+                
+                var itemId = _shapeFiles.Items.Add(fileItem);
+
+                _shapeFiles.SelectedItems.Add(fileItem);             
+            }
+
+        }
+
         private void ShowStats()
         {
-            XminView.Text = _shapeManager.Xmin.ToString();
-            XmaxView.Text = _shapeManager.Xmax.ToString();
-            YminView.Text = _shapeManager.Ymin.ToString();
-            YmaxView.Text = _shapeManager.Ymax.ToString();
-            Items.Text = _shapeManager.RecordCount.ToString();
+            XminView.Text = $"{_shapeManager.Xmin:0}";
+            XmaxView.Text = $"{_shapeManager.Xmax:0}";
+            YminView.Text = $"{_shapeManager.Ymin:0}";
+            YmaxView.Text = $"{_shapeManager.Ymax:0}";
+            ItemCount.Text = _shapeManager.RecordCount.ToString();
             WidthText.Text = _shapeManager.Width.ToString();
             HeightText.Text = _shapeManager.Height.ToString();
             //_windowX = _shapeManager.Width / 2;
@@ -122,10 +146,10 @@ namespace ShapeViewer
                     Ymax = ymax
                 };
 
-                TextAreaXmin.Text = box.Xmin.ToString();
-                TextAreaXmax.Text = box.Xmax.ToString();
-                TextAreaYmin.Text = box.Ymin.ToString();
-                TextAreaYmax.Text = box.Ymax.ToString();
+                TextAreaXmin.Text = $"{box.Xmin:0}";
+                TextAreaXmax.Text = $"{box.Xmax:0}";
+                TextAreaYmin.Text = $"{box.Ymin:0}";
+                TextAreaYmax.Text = $"{box.Ymax:0}";
 
                 var temp = _shapeManager.SetArea(box);
                 ItemsArea.Text = temp.ToString();
@@ -138,7 +162,9 @@ namespace ShapeViewer
                 //var shapeTest = ShapeShifter.ShapeShifter.MergeAllShapeFiles(_folder);
                 var width = (int)_mapViewGrid.RenderSize.Width;
                 var height = (int)_mapViewGrid.RenderSize.Height;
-                var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, width, height);
+                bool renderText = _metersPerPixel < 300 ? true : false;
+
+                var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, width, height, renderText);
                 
                 using (MemoryStream memory = new MemoryStream())
                 {
@@ -149,10 +175,19 @@ namespace ShapeViewer
                     bitmapImage.StreamSource = memory;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.EndInit();
-                    //ImageDump.Source = bitmapImage;
                     ((System.Windows.Controls.Image)_mapViewGrid.Child).Source = bitmapImage;
-                    //_mapViewGrid.Fill = new ImageBrush(bitmapImage);
                 }
+
+                // set box pan limits and sizes
+                var aspectY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
+
+                _mapViewGrid.AreaWidth = _shapeManager.Width;
+                _mapViewGrid.AreaHeight = _shapeManager.Height;
+                _mapViewGrid.BoxWidth = _metersPerPixel;
+                _mapViewGrid.BoxHeight = _metersPerPixel * aspectY;
+                _mapViewGrid.BoxOriginX = _windowX * _shapeManager.Width;
+                _mapViewGrid.BoxOriginY = _windowY * _shapeManager.Height;
+                _mapViewGrid.AreaScale = _metersPerPixel / 1000;
                 _rendering = false;
             }
         }
@@ -175,13 +210,13 @@ namespace ShapeViewer
             SetNewArea();
         }
 
-        private void Button_GetArea(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void _mapViewGrid_Refresh(object sender, PanZoomRefreshEventArgs e)
         {
+            if (_shapeManager == null)
+            {
+                return;
+            }
+
             var currentX = _windowX * _shapeManager.Width;
             var scaleX = _metersPerPixel / _mapViewGrid.RenderSize.Width;
             currentX += (e.Pan.X * scaleX);
@@ -192,12 +227,49 @@ namespace ShapeViewer
 
             var currentY = _windowY * _shapeManager.Height;
             var scaleY = _metersPerPixel / _mapViewGrid.RenderSize.Height;
-            currentY += (e.Pan.Y * scaleY) * aspectY;
+            currentY -= (e.Pan.Y * scaleY) * aspectY;
             var distFractionY = currentY / _shapeManager.Height;
             _windowY = distFractionY;
             
             _mapViewGrid.Reset();
             SetNewArea();
+        }
+
+        private void _mapViewGrid_Move(object sender, PanZoomRefreshEventArgs e)
+        {
+            var panMove = (ZoomBorder)sender;
+            var left = panMove.BoxX - (_metersPerPixel / 2);
+            var right = panMove.BoxX + (panMove.BoxWidth / 2);
+            var top = panMove.BoxY - (panMove.BoxHeight / 2);
+            var bottom = panMove.BoxY + (panMove.BoxHeight / 2);
+
+            MapX.Text = $"{panMove.BoxX:0}";
+            MapY.Text = $"{panMove.BoxY:0}";
+
+            MapLeft.Text = $"{left:0}";
+            MapRight.Text = $"{right:0}";
+            MapTop.Text = $"{top:0}";
+            MapBottom.Text = $"{bottom:0}";
+
+            MapWidth.Text = $"{panMove.AreaWidth:0}";
+            MapHeight.Text = $"{panMove.AreaHeight:0}";
+        }
+
+        private void _mapViewGrid_Zoom(object sender, PanZoomRefreshEventArgs e)
+        {
+            var pan = (ZoomBorder)sender;
+            _metersPerPixel = pan.AreaScale * 1000 < 1 ? 1 : pan.AreaScale * 1000;
+            _mapViewGrid_Refresh(sender, e);
+        }
+
+        private void _shapeFiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var test = 0;
+        }
+
+        private void _shapeFiles_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var test = 0;
         }
     }
 }

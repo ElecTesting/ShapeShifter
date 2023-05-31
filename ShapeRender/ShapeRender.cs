@@ -7,7 +7,7 @@ namespace ShapeRender
 {
     public class ShapeRender
     {
-        public static Bitmap RenderShapeFile(ShapeFile shapeFile, int width, int height)
+        public static Bitmap RenderShapeFile(ShapeFile shapeFile, int width, int height, bool renderText = true)
         {
             //var width = (shapeFile.BoundingBox.Xmax - shapeFile.BoundingBox.Xmin) * scale;
             //var height = (shapeFile.BoundingBox.Ymax - shapeFile.BoundingBox.Ymin) * scale;
@@ -41,25 +41,23 @@ namespace ShapeRender
                 }
 
                 // points, which are text
-                foreach (var item in shapeFile.Points)
+                if (renderText)
                 {
-                    if (!string.IsNullOrWhiteSpace(item.TextString))
+                    foreach (var item in shapeFile.Points)
                     {
-                        DrawTextPoint(graphics, item, shapeFile.BoundingBox, scale);
+                        if (!string.IsNullOrWhiteSpace(item.TextString))
+                        {
+                            DrawTextPoint(graphics, item, shapeFile.BoundingBox, scale);
+                        }
                     }
                 }
             }
-
+            
             return image;
         }
 
         private static void DrawPoly(Graphics graphics, BasePoloygon poly, BoundingBoxHeader box, double scale, Color color)
         {
-            //var rand = new Random(poly.Points.Count);
-            //var r = rand.Next(0, 255);
-            //var g = rand.Next(0, 255);
-            //var b = rand.Next(0, 255);
-
             var pen = new Pen(new SolidBrush(Color.Black), 1);
             var brush = new SolidBrush(color);
 
@@ -67,7 +65,7 @@ namespace ShapeRender
 
             foreach (var point in poly.Points)
             {
-                newPoints.Add(new PointF((float)((point.X - box.Xmin) * scale), (float)((point.Y - box.Ymin) * scale)));
+                newPoints.Add(new PointF((float)((point.X - box.Xmin) * scale), (float)((box.Ymax - point.Y) * scale)));
             }
             graphics.FillPolygon(brush, newPoints.ToArray());
             graphics.DrawPolygon(pen, newPoints.ToArray());
@@ -76,30 +74,14 @@ namespace ShapeRender
         private static void DrawLine(Graphics graphics, ShapePoint point1, ShapePoint point2, BoundingBoxHeader box, double scale)
         {
             var pen = new Pen(new SolidBrush(Color.Black), 1);
-            var p1 = new PointF((float)((point1.X - box.Xmin) * scale), (float)((point1.Y - box.Ymin) * scale));
-            var p2 = new PointF((float)((point2.X - box.Xmin) * scale), (float)((point2.Y - box.Ymin) * scale));
+            var p1 = new PointF((float)((point1.X - box.Xmin) * scale), (float)((box.Ymax - point1.Y) * scale));
+            var p2 = new PointF((float)((point2.X - box.Xmin) * scale), (float)((box.Ymax - point2.Y) * scale));
             graphics.DrawLine(pen, p1, p2);
-        }
-
-        private static void DrawPoint(Graphics graphics, double x, double y, BoundingBoxHeader box, double scale)
-        {
-            //var pen = new Pen(new SolidBrush(Color.Black), 1);
-            //var p1 = new PointF((float)((x - box.Xmin) * scale), (float)((y - box.Ymin) * scale));
-            //graphics.DrawRectangle(pen, p1.X, p1.Y, 1, 1);
-            //graphics.DrawString("POINT!", new Font("Arial", 10), Brushes.HotPink, x, y);
-        }
-
-        private static void DrawTextPoint(Graphics graphics, double x, double y, BoundingBoxHeader box, double scale, string textString)
-        {
-            //var pen = new Pen(new SolidBrush(Color.Black), 1);
-            var p1 = new PointF((float)((x - box.Xmin) * scale), (float)((y - box.Ymin) * scale));
-            //graphics.DrawRectangle(pen, p1.X, p1.Y, 1, 1);
-            graphics.DrawString(textString, new Font("Courier New", 10), Brushes.Black, p1.X, p1.Y);
         }
 
         private static void DrawTextPoint(Graphics graphics, ShapePoint point, BoundingBoxHeader box, double scale)
         {
-            var p1 = new PointF((float)((point.X - box.Xmin) * scale), (float)((point.Y - box.Ymin) * scale));
+            var p1 = new PointF((float)((point.X - box.Xmin) * scale), (float)((box.Ymax - point.Y) * scale));
             graphics.DrawString(point.TextString, new Font("Courier New", 10), Brushes.Black, p1.X, p1.Y);
         }
     }
