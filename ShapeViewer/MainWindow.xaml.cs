@@ -282,11 +282,6 @@ namespace ShapeViewer
 
         }
 
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void Map_MouseMove(object sender, MouseEventArgs e)
         {
             if (_shapeManager != null)
