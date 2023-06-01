@@ -210,16 +210,13 @@ namespace ShapeViewer
             SetNewArea();
         }
 
-        private bool _drag = false;
-        private System.Windows.Point _startPoint;
         private double _windowX;
         private double _windowY;
-        private double _posMetersX;
 
         private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             _metersPerPixel = e.NewValue * 1000 < 1 ? 1 : e.NewValue * 1000;
-            ZoomVal.Text = string.Format("{0:0.00}", _metersPerPixel);
+            ZoomVal.Text = $"{_metersPerPixel:0}";
             SetNewArea();
         }
 
@@ -275,11 +272,40 @@ namespace ShapeViewer
             _mapViewGrid_Refresh(sender, e);
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void Button_MapExport(object sender, RoutedEventArgs e)
         {
-            var test = 0;
-            var temp = listBoxZone;
+            var totalItems = _shapeManager.Summary.Sum(s => s.ItemCount);
 
+            if (totalItems > 500000)
+            {
+                if (MessageBox.Show("Large map, are you sure?") == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+                
+            }
+
+            var saveFileDialog = new SaveFileDialog();
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                var width = (int)_mapViewGrid.RenderSize.Width;
+                var height = (int)_mapViewGrid.RenderSize.Height;
+
+                var totalBox = new BoundingBox()
+                {
+                    Xmax = _shapeManager.Xmax,
+                    Xmin = _shapeManager.Xmin, 
+                    Ymax = _shapeManager.Ymax,
+                    Ymin = _shapeManager.Ymin
+                };
+
+                _shapeManager.SetArea(totalBox);
+                var shapeFile = _shapeManager.GetArea();
+
+                var saveImage = ShapeRender.ShapeRender.RenderShapeFile(shapeFile, 10000, 10000, false);
+
+                saveImage.Save(saveFileDialog.FileName, ImageFormat.Png);
+            }
         }
 
         private void Map_MouseMove(object sender, MouseEventArgs e)

@@ -64,7 +64,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Button Content="Button" HorizontalAlignment="Left" Height="26" Margin="1152,21,0,0" VerticalAlignment="Top" Width="157" Click="Button_Click_1">
+        <Button Content="Export Full Map" HorizontalAlignment="Left" Height="26" Margin="1152,21,0,0" VerticalAlignment="Top" Width="157" Click="Button_MapExport">
         </Button>
         <TextBlock HorizontalAlignment="Left" Margin="1140,476,0,0" TextWrapping="Wrap" Text="Position X" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="1140,492,0,0" TextWrapping="Wrap" Text="Position Y" VerticalAlignment="Top"/>
