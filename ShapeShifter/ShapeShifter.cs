@@ -139,6 +139,29 @@ namespace ShapeShifter
             return shapeCache;
         }
 
+        private static string[] _featureCodeNames = new string[] 
+        { 
+            "FEATCODE", 
+            "featureCod" 
+        };
+
+        private static string[] _textStringNames = new string[] 
+        { 
+            "TEXTSTRING", 
+            "textString" 
+        };
+
+        private static int GetOrdinalFromList(DBaseReader.DBaseReader dbf, string[] names)
+        {
+            foreach (var featName in names)
+            {
+                  if (dbf.Columns.Where(c => c.Name == featName).FirstOrDefault() != null)
+                {
+                    return dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == featName).First());
+                }
+            }
+            return -1;
+        }
 
         private static void ProcessShapeCacheRecords(BinReader reader, ShapeCache shapeCache)
         {
@@ -147,17 +170,9 @@ namespace ShapeShifter
 
             using (var dbf = new DBaseReader.DBaseReader(dbaseFile))
             {
-                var featCodeOrdinal = -1;
-                if (dbf.Columns.Where(c => c.Name == "FEATCODE").FirstOrDefault() != null)
-                {
-                    featCodeOrdinal = dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == "FEATCODE").First());
-                }
+                var featCodeOrdinal = GetOrdinalFromList(dbf, _featureCodeNames);
 
-                var textStringOrdinal = -1;
-                if (dbf.Columns.Where(c => c.Name == "TEXTSTRING").FirstOrDefault() != null)
-                {
-                    textStringOrdinal = dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == "TEXTSTRING").First());
-                }
+                var textStringOrdinal = GetOrdinalFromList(dbf, _textStringNames);
 
                 while (reader.Position < reader.Length)
                 {
