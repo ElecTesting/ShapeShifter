@@ -36,6 +36,10 @@ namespace ShapeRender
                 {
                     foreach (var poly in item.Polygons)
                     {
+                        if (item.Color == Color.Black)
+                        {
+                            item.Color = Color.White;
+                        }
                         DrawPoly(graphics, poly, shapeFile.BoundingBox, scale, item.Color);
                     }
                 }

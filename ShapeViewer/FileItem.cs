@@ -10,7 +10,7 @@ namespace ShapeViewer
     public class FileItem
     {
         public string FilePath { get; set; } = "";
-
+        public bool IsSelected { get; set; } = false;
         public override string ToString()
         {
             if (File.Exists(FilePath))
