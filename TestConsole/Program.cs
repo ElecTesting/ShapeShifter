@@ -26,9 +26,11 @@ using System.Drawing.Imaging;
 //}
 
 
-
+var shapeFolder = @"D:\Mapping\Oxfordshire\MiltonRAB";
 // shape shifter testing
-var shapeManager = new ShapeManager(@"D:\EsriData\Bradford\02_Renamed");
+var shapeManager = new ShapeManager(shapeFolder);
+
+var mapName = Path.GetFileName(shapeFolder);
 
 var area = new BoundingBox()
 {
@@ -47,6 +49,8 @@ var shapeFile = shapeManager.GetArea();
 var image = ShapeRender.ShapeRender.RenderShapeFile(shapeFile, (int)shapeManager.Width/4, (int)shapeManager.Height/4, false);
 
 #pragma warning disable CA1416 // Validate platform compatibility
-image.Save(@"D:\temp\mundsley.png", ImageFormat.Png);
+var mapFile = Path.Combine(@"D:\temp", $"{mapName}.png");
+
+image.Save(mapFile, ImageFormat.Png);
 #pragma warning restore CA1416 // Validate platform compatibility
 

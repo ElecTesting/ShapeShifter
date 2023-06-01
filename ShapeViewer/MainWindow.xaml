@@ -6,8 +6,7 @@
         xmlns:local="clr-namespace:ShapeViewer"
         mc:Ignorable="d"
         Title="Shape Viewer" Height="800" Width="1400">
-    <Grid Name="GridControls" Margin="0,0,0
-,0">
+    <Grid Name="GridControls" Margin="0,0,0,0">
         <Slider Name="ZoomSlider" HorizontalAlignment="Left" Height="17" Margin="-123,174,0,0" VerticalAlignment="Top" Width="296" RenderTransformOrigin="0.5,0.5" ValueChanged="ZoomSlider_ValueChanged" Minimum="0" Maximum="1">
             <Slider.RenderTransform>
                 <TransformGroup>
@@ -47,7 +46,7 @@
         <TextBlock x:Name="HeightText" HorizontalAlignment="Left" Margin="954,593,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
         <TextBlock x:Name="ZoomVal" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Zoom" VerticalAlignment="Top"/>
 
-        <local:ZoomBorder x:Name="_mapViewGrid" ClipToBounds="True" Background="Gray" Margin="64,18,0,0" Refresh="_mapViewGrid_Refresh" Move="_mapViewGrid_Move" Zoom="_mapViewGrid_Zoom" Height="720" VerticalAlignment="Top" HorizontalAlignment="Left" Width="825">
+        <local:ZoomBorder MouseMove="Map_MouseMove"  x:Name="_mapViewGrid" ClipToBounds="True" Background="Gray" Margin="64,18,0,0" Refresh="_mapViewGrid_Refresh" Move="_mapViewGrid_Move" Zoom="_mapViewGrid_Zoom" Height="720" VerticalAlignment="Top" HorizontalAlignment="Left" Width="825">
             <Image HorizontalAlignment="Stretch" Width="NaN"/>
         </local:ZoomBorder>
         <TextBlock Name="MapX" HorizontalAlignment="Left" Margin="1140,606,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
@@ -58,25 +57,18 @@
         <TextBlock Name="MapBottom" HorizontalAlignment="Left" Margin="1140,704,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
         <TextBlock Name="MapWidth" HorizontalAlignment="Left" Margin="1208,606,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
         <TextBlock Name="MapHeight" HorizontalAlignment="Left" Margin="1208,622,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <ListBox Name="_shapeFiles" Margin="909,52,10,0"
-                 ItemsSource="{Binding Items}"
-                 SelectionMode="Multiple" Height="380" VerticalAlignment="Top"  MouseDown="_shapeFiles_MouseDown" SelectionChanged="_shapeFiles_SelectionChanged">
-            <ListBox.Resources>
-                <Style TargetType="ListBoxItem">
-                    <Setter Property="OverridesDefaultStyle" Value="true" />
-                    <Setter Property="SnapsToDevicePixels" Value="true" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="ListBoxItem">
-                                <CheckBox Margin="5,2"
-                                          IsChecked="{TemplateBinding IsSelected}">
-                                    <ContentPresenter />
-                                </CheckBox>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </ListBox.Resources>
+        <ListBox Name="listBoxZone" ItemsSource="{Binding _shapeEntities}" Background="Azure" Margin="914,76,10,334">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Display}" Checked="ShapeItem_CheckChange" Unchecked="ShapeItem_CheckChange"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
         </ListBox>
+        <Button Content="Button" HorizontalAlignment="Left" Height="26" Margin="1152,21,0,0" VerticalAlignment="Top" Width="157" Click="Button_Click_1">
+        </Button>
+        <TextBlock HorizontalAlignment="Left" Margin="1140,476,0,0" TextWrapping="Wrap" Text="Position X" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="1140,492,0,0" TextWrapping="Wrap" Text="Position Y" VerticalAlignment="Top"/>
+        <TextBlock x:Name="_pointPosX" HorizontalAlignment="Left" Margin="1197,476,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top"/>
+        <TextBlock x:Name="_pointPosY" HorizontalAlignment="Left" Margin="1197,492,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top"/>
     </Grid>
 </Window>

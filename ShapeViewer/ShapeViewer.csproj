@@ -5,7 +5,12 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Map Point-304x304.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Map Point-304x304.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FolderBrowserEx" Version="1.0.1" />

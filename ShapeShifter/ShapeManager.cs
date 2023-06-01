@@ -20,6 +20,8 @@ namespace ShapeShifter
         public double Width { get; set; }
         public double Height { get; set; }
 
+        public List<ShapeSummary> Summary { get; set; } = new List<ShapeSummary>();
+
         public int FileCount
         {
             get
@@ -44,6 +46,16 @@ namespace ShapeShifter
             _cache = ShapeShifter.CreateShapeCacheFromFolder(path);
             _area = new List<ShapeCache>();
 
+            foreach (var cache in _cache)
+            {
+                Summary.Add(new ShapeSummary()
+                {
+                    FilePath = cache.FilePath,
+                    FileName = Path.GetFileName(cache.FilePath),
+                    ItemCount = cache.Items.Count,
+                });
+            }
+
             Xmin = _cache.Min(x => x.BoundingBox.Xmin);
             Xmax = _cache.Max(x => x.BoundingBox.Xmax);   
             Ymin = _cache.Min(x => x.BoundingBox.Ymin);   
@@ -56,6 +68,11 @@ namespace ShapeShifter
          */
         public int SetArea(BoundingBox area)
         {
+            return SetArea(area, new List<string>());
+        }
+
+        public int SetArea(BoundingBox area, List<string> exclusions)
+        {
             _area = new List<ShapeCache>();
             _areaBox = area;
 
@@ -63,6 +80,12 @@ namespace ShapeShifter
 
             foreach (var cache in _cache)
             {
+                // if the file exists in the exclusion list then skip it
+                if (exclusions.Contains(cache.FilePath))
+                {
+                    continue;
+                }
+
                 if (cache.BoundingBox.Intersects(area))
                 {
                     var thisCache = new ShapeCache()
@@ -70,6 +93,7 @@ namespace ShapeShifter
                         FilePath = cache.FilePath,
                         DbfPath = cache.DbfPath,
                     };
+
                     _area.Add(thisCache);
 
                     foreach (var item in cache.Items)
@@ -90,7 +114,7 @@ namespace ShapeShifter
         {
             if (_area.Count() == 0)
             {
-                throw new Exception("No area set");
+                //throw new Exception("No area set");
             }
 
             return ShapeShifter.CreateShapeFileFromCache(_area, _areaBox);

@@ -18,8 +18,19 @@ namespace ShapeShifter.Storage
         public double Mmin { get; set; }
         public double Mmax { get; set; }
 
-
-
+        public BoundingBox GetBox 
+        {
+            get {
+                return new BoundingBox()
+                {
+                    Xmax = Xmax,
+                    Xmin = Xmin,
+                    Ymax = Ymax,
+                    Ymin = Ymin
+                };
+            }
+        }
+        
         /* Checks input box intersects with this box
          * 
          */
@@ -57,5 +68,21 @@ namespace ShapeShifter.Storage
                 return false;
             }
         }
+
+        public bool Outside(BoundingBox getBox)
+        {
+            if (Xmin > getBox.Xmin 
+                || Xmax < getBox.Xmax
+                || Ymin > getBox.Ymin 
+                || Ymax < getBox.Ymax)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
     }
 }

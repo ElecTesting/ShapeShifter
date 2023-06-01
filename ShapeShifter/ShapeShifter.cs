@@ -9,6 +9,8 @@ using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using System.Data.Common;
+using System.Net;
+using System.Drawing;
 
 namespace ShapeShifter
 {
@@ -16,6 +18,27 @@ namespace ShapeShifter
     {
         // TODO: Move to config
         private static List<MapFeature> Features = JsonConvert.DeserializeObject<List<MapFeature>>(File.ReadAllText(@"D:\\_Projects_\\ShapeShifter\\Data\\FeatureCodes.json"));
+
+
+        private static string[] _featureCodeNames = new string[]
+        {
+            "FEATCODE",
+            "featureCod"
+        };
+
+        private static string[] _textStringNames = new string[]
+        {
+            "TEXTSTRING",
+            "textString",
+            "ADDRESS",
+            "JUNCTIONNU",
+            "NAME",
+            "Text",
+            "TEXT",
+            "TEXTSTRI0",
+            "TXT_STRING",
+            "WARD_NAME"
+        };
 
         /* Collect all shape files and returns a single ShapeFile object
          * 
@@ -53,7 +76,7 @@ namespace ShapeShifter
             return shapeFiles;
         }
 
-        /* Process Shape file from disk
+        /* Process a single shape file from disk
          * 
          */
         public static ShapeFile ProcessShapeFile(string fileName)
@@ -83,7 +106,7 @@ namespace ShapeShifter
             return shapeFile;
         }
 
-        /* Create shape cache froma file path
+        /* Create shape cache from a file path
          */
         public static ShapeCache CreateShapeCacheFromFile(string filePath)
         {
@@ -103,10 +126,10 @@ namespace ShapeShifter
             foreach (var filename in files)
             {
                 var cache = CreateShapeCacheFromFile(filename);
-                if (cache.BoundingBox.Xmin != 0
-                    && cache.BoundingBox.Xmax != 0
-                    && cache.BoundingBox.Ymin != 0
-                    && cache.BoundingBox.Ymax != 0)
+                if (cache.BoundingBox.Xmin > 400
+                    && cache.BoundingBox.Xmax > 400
+                    && cache.BoundingBox.Ymin > 400
+                    && cache.BoundingBox.Ymax > 400)
                 {
                     shapeCaches.Add(cache);
                 }
@@ -139,23 +162,12 @@ namespace ShapeShifter
             return shapeCache;
         }
 
-        private static string[] _featureCodeNames = new string[] 
-        { 
-            "FEATCODE", 
-            "featureCod" 
-        };
-
-        private static string[] _textStringNames = new string[] 
-        { 
-            "TEXTSTRING", 
-            "textString" 
-        };
-
         private static int GetOrdinalFromList(DBaseReader.DBaseReader dbf, string[] names)
         {
+            var ordinal = 0;
             foreach (var featName in names)
             {
-                  if (dbf.Columns.Where(c => c.Name == featName).FirstOrDefault() != null)
+                if (dbf.Columns.Where(c => c.Name == featName).FirstOrDefault() != null)
                 {
                     return dbf.Columns.IndexOf(dbf.Columns.Where(c => c.Name == featName).First());
                 }
@@ -163,16 +175,20 @@ namespace ShapeShifter
             return -1;
         }
 
+        /* Process a shape cache file
+         * 
+         * walks the shape file addint records to the cache with bounding boxes only
+         */
         private static void ProcessShapeCacheRecords(BinReader reader, ShapeCache shapeCache)
         {
+            var cacheBox = shapeCache.BoundingBox.GetBox;
+
             var recordIdCheck = 1;
             var dbaseFile = Path.ChangeExtension(shapeCache.FilePath, ".dbf");
 
             using (var dbf = new DBaseReader.DBaseReader(dbaseFile))
             {
                 var featCodeOrdinal = GetOrdinalFromList(dbf, _featureCodeNames);
-
-                var textStringOrdinal = GetOrdinalFromList(dbf, _textStringNames);
 
                 while (reader.Position < reader.Length)
                 {
@@ -197,7 +213,7 @@ namespace ShapeShifter
 
                     if (featCodeOrdinal >= 0)
                     {
-                        var featCode = Convert.ToInt32(dbf.GetInt32(featCodeOrdinal));
+                        var featCode = dbf.GetInt32(featCodeOrdinal);
                         var feat = Features.Find(x => x.FeatCode == featCode);
                         if (feat != null)
                         {
@@ -216,15 +232,22 @@ namespace ShapeShifter
                             break;
                         case ShapeType.PolyLine:
                         case ShapeType.Polygon:
+                        case ShapeType.PolyLineZ:
                             cacheItem.Box = ReadBoundingBox(reader);
                             break;
                         default:
-                            Console.WriteLine($"Unsupported record type {shapeType} - skipping {recordLength} bytes");
+                            //Console.WriteLine($"Unsupported record type {shapeType} - skipping {recordLength} bytes");
                             reader.Move(recordLength - 4);
                             break;
                     };
 
-                    shapeCache.Items.Add(cacheItem);
+                    if (cacheItem.Box.Xmin > 400
+                        && cacheItem.Box.Xmax > 400
+                        && cacheItem.Box.Ymax > 400
+                        && cacheItem.Box.Ymax > 400)
+                    {
+                        shapeCache.Items.Add(cacheItem);
+                    }
 
                     reader.BaseStream.Position = nextRecord;
 
@@ -365,6 +388,21 @@ namespace ShapeShifter
             polyLine.PolyLines = ReadPoloygons(reader);
             return polyLine;
         }
+
+        /* reads poly line Z record and returns object, ignores Z values
+         *
+         */
+        private static ShapePolyLine ReadPolyLineZ(BinReader reader)
+        {
+            var polyLine = new ShapePolyLine()
+            {
+                Box = ReadBoundingBox(reader)
+            };
+
+            polyLine.PolyLines = ReadPoloygons(reader);
+            return polyLine;
+        }
+
 
         /* reads poly line record and returns object
          */
@@ -531,18 +569,20 @@ namespace ShapeShifter
             {
                 using (var dbf = new DBaseReader.DBaseReader(cache.DbfPath))
                 {
-                    // determine if the dbf file has the required columns
-                    var featCodeOrdinal = ColumnToOrdinal(dbf, "FEATCODE");
-                    var textStringOrdinal = ColumnToOrdinal(dbf, "TEXTSTRING");
-                    var textAngleOrdinal = ColumnToOrdinal(dbf, "TEXTANGLE");
+                    var textStringOrdinal = GetOrdinalFromList(dbf, _textStringNames);
 
                     foreach (var item in cache.Items)
                     {
                         // move to the correct position in the shape binday file
                         reader.Goto(item.FileOffset);
 
-                        // move dbf to correct record
-                        dbf.GotoRow(item.RecordId - 1);
+                        var textString = "";
+                        if (textStringOrdinal >= 0)
+                        {
+                            // move dbf to correct record
+                            dbf.GotoRow(item.RecordId - 1);
+                            textString = dbf.GetString(textStringOrdinal);
+                        }
 
                         var shapeType = (ShapeType)reader.ReadInt32();
 
@@ -553,23 +593,28 @@ namespace ShapeShifter
                                 break;
                             case ShapeType.Point:
                                 var point = ReadPointRecord(reader);
-                                if (textStringOrdinal >= 0)
-                                {
-                                    point.TextString = dbf.GetString(textStringOrdinal);
-                                }
-                                if (textAngleOrdinal >= 0)
-                                {
-                                    point.TextAngle = dbf.GetDouble(textAngleOrdinal);
-                                }
+                                point.TextString = textString;
+                                point.Color = item.FeatureColor;
                                 shapeFile.Points.Add(point);
                                 break;
                             case ShapeType.PolyLine:
-                                shapeFile.PolyLines.Add(ReadPolyLine(reader));
+                                var line = ReadPolyLine(reader);
+                                line.Color = item.FeatureColor;
+                                if (!string.IsNullOrEmpty(textString))
+                                {
+                                    line.TextString = textString;
+                                }
+                                shapeFile.PolyLines.Add(line);
                                 break;
                             case ShapeType.Polygon:
                                 var poly = ReadPolyGon(reader);
                                 poly.Color = item.FeatureColor;
                                 shapeFile.Polygons.Add(poly);
+                                break;
+                            case ShapeType.PolyLineZ:
+                                var polyLine = ReadPolyLineZ(reader);
+                                polyLine.Color = item.FeatureColor;
+                                shapeFile.PolyLines.Add(polyLine);
                                 break;
                             default:
                                 break;

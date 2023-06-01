@@ -1,28 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShapeViewer
+namespace ShapeShifter.Storage
 {
-    public class FileItem
+    public class ShapeSummary
     {
         public string FilePath { get; set; } = "";
         public string FileName { get; set; } = "";
+        public int ItemCount { get; set; } = 0;
+        
+        public string Display 
+        { 
+            get
+            {
+                return $"{Path.GetFileNameWithoutExtension(FileName)} ({ItemCount})";
+            }
+        }
 
         public bool IsSelected { get; set; } = true;
+
         public override string ToString()
         {
-            if (File.Exists(FilePath))
-            {
-                return Path.GetFileName(FilePath);
-            }
-            else
-            {
-                return "File not found";
-            }
+            return FilePath;
         }
     }
 }

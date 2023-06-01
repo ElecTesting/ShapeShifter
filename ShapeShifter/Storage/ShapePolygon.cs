@@ -9,7 +9,6 @@ namespace ShapeShifter.Storage
 {
     public class ShapePolygon : ShapeObject
     {
-        public Color Color { get; set; } = Color.White;
         public List<BasePoloygon> Polygons { get; set; } = new List<BasePoloygon>();
     }
 }

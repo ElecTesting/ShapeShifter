@@ -38,6 +38,8 @@ namespace ShapeViewer
         private bool _rendering = false;
         private bool _fileLoaded = false;
 
+        public ObservableCollection<ShapeSummary> _shapeEntities { get; set; } = new ObservableCollection<ShapeSummary>();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -68,11 +70,11 @@ namespace ShapeViewer
                 }
                 else
                 {
-                    GetFileItems(shapeFileList);
-
                     _shapeManager = new ShapeManager(path);
                     _folder = path;
                     ShowStats();
+
+                    GetFileItems(_shapeManager.Summary);
 
                     _windowX = 0.5;
                     _windowY = 0.5;
@@ -83,23 +85,24 @@ namespace ShapeViewer
             }
         }
 
-        private void GetFileItems(string[] filePaths)
+        private void GetFileItems(List<ShapeSummary> summary)
         {
-            _shapeFiles.Items.Clear();
+            _shapeEntities.Clear();
 
-            var items = new List<FileItem>();
-            foreach (var filePath in filePaths)
+            foreach (var item in summary)
             {
-                var fileItem = new FileItem()
-                {
-                    FilePath = filePath
-                };
-                
-                var itemId = _shapeFiles.Items.Add(fileItem);
-
-                _shapeFiles.SelectedItems.Add(fileItem);             
+                _shapeEntities.Add(item);       
             }
 
+            DataContext = this;
+        }
+
+        /* event handler for checkbox change
+         * triggers a re-render of the map excluding the unchecked layers
+         */
+        private void ShapeItem_CheckChange(object sender, RoutedEventArgs e)
+        {
+            SetNewArea();
         }
 
         private void ShowStats()
@@ -151,8 +154,18 @@ namespace ShapeViewer
                 TextAreaYmin.Text = $"{box.Ymin:0}";
                 TextAreaYmax.Text = $"{box.Ymax:0}";
 
-                var temp = _shapeManager.SetArea(box);
-                ItemsArea.Text = temp.ToString();
+                var exclusionList = new List<string>();
+
+                foreach (var item in _shapeEntities)
+                {
+                    if (!item.IsSelected)
+                    {
+                        exclusionList.Add(item.FilePath);
+                    }
+                }
+
+                var itemCount = _shapeManager.SetArea(box, exclusionList);
+                ItemsArea.Text = itemCount.ToString();
 
                 var areaOnly = _shapeManager.GetArea();
 
@@ -262,14 +275,35 @@ namespace ShapeViewer
             _mapViewGrid_Refresh(sender, e);
         }
 
-        private void _shapeFiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             var test = 0;
+            var temp = listBoxZone;
+
         }
 
-        private void _shapeFiles_MouseDown(object sender, MouseButtonEventArgs e)
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
-            var test = 0;
+
+        }
+
+        private void Map_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_shapeManager != null)
+            {
+                // set box pan limits and sizes
+                var aspectY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
+
+                var x = (e.GetPosition((IInputElement)sender).X / _mapViewGrid.RenderSize.Width) - 0.5;
+                var y = -((e.GetPosition((IInputElement)sender).Y / _mapViewGrid.RenderSize.Height) - 0.5);
+                x = (_windowX * _shapeManager.Width) + (x * _metersPerPixel);
+                y = (_windowY * _shapeManager.Height) + (y * _metersPerPixel * aspectY);
+                x = _shapeManager.Xmin + x;
+                y = _shapeManager.Ymax - y;
+                _pointPosX.Text = $"{x:0}";
+                _pointPosY.Text = $"{y:0}";
+            }
         }
     }
 }
+
