@@ -1,6 +1,7 @@
 ﻿using ShapeShifter.Storage;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,6 +41,8 @@ namespace ShapeShifter
 
         /* instansiate the ShapeManager class with a path to a folder containing shapefiles 
          * and set min / max and height / width properties
+         * 
+         * adds a list of all shape files found to a summary which can be used as a toggle
          */
         public ShapeManager(string path)
         {
@@ -92,6 +95,7 @@ namespace ShapeShifter
                     {
                         FilePath = cache.FilePath,
                         DbfPath = cache.DbfPath,
+                        Overlay = cache.Overlay
                     };
 
                     _area.Add(thisCache);
@@ -110,6 +114,9 @@ namespace ShapeShifter
             return count;
         }
 
+        /* GetArea
+         * returns a shape object containing the area set by SetArea
+         */
         public ShapeFile GetArea()
         {
             if (_area.Count() == 0)
@@ -119,5 +126,39 @@ namespace ShapeShifter
 
             return ShapeShifter.CreateShapeFileFromCache(_area, _areaBox);
         }
+
+        /* CrossRef
+         * takes a cache file and intersetcs it with the total area of the current map
+         */
+        public void CrossRef(ShapeCache shapeCache)
+        {
+            var fullMapArea = new BoundingBox()
+            {
+                Xmin = Xmin,
+                Xmax = Xmax,
+                Ymin = Ymin,
+                Ymax = Ymax,
+            };
+            shapeCache.Overlay = true;
+
+            Random rnd = new Random(1);
+            shapeCache.Items = shapeCache.Items.Where(x => x.Box.Intersects(fullMapArea)).ToList();
+            foreach (var item in shapeCache.Items)
+            {
+                item.FeatureColor = Color.FromArgb(30, rnd.Next(0, 255), rnd.Next(0, 255), rnd.Next(0, 255));
+            }
+
+            shapeCache.BoundingBox = new BoundingBoxHeader()
+            {
+                Xmax = Xmax,
+                Xmin = Xmin,
+                Ymax = Ymax,
+                Ymin = Ymin
+            };
+
+            _cache.Add(shapeCache);
+        }
+
+
     }
 }

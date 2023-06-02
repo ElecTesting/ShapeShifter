@@ -29,6 +29,7 @@ namespace ShapeShifter.Storage
         public List<ShapeMultiPoint> MultiPoints { get; set; } = new List<ShapeMultiPoint>();
         public List<ShapePolyLine> PolyLines { get; set; } = new List<ShapePolyLine>();
         public List<ShapePolygon> Polygons { get; set; } = new List<ShapePolygon>();
+        public List<ShapePolygon> PolygonOverlays { get; set; } = new List<ShapePolygon>();
 
         public List<ShapeObject> Objects { get; set; } = new List<ShapeObject>();
     }

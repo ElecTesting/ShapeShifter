@@ -67,6 +67,19 @@ namespace ShapeRender
                         }
                     }
                 }
+
+                // do the poly overlays
+                foreach (var item in shapeFile.PolygonOverlays)
+                {
+                    foreach (var poly in item.Polygons)
+                    {
+                        if (item.Color == Color.Black)
+                        {
+                            item.Color = Color.White;
+                        }
+                        DrawPolyOverlay(graphics, poly, shapeFile.BoundingBox, scale, item.Color);
+                    }
+                }
             }
             
             return image;
@@ -86,6 +99,21 @@ namespace ShapeRender
             graphics.FillPolygon(brush, newPoints.ToArray());
             graphics.DrawPolygon(pen, newPoints.ToArray());
         }
+
+        private static void DrawPolyOverlay(Graphics graphics, BasePoloygon poly, BoundingBoxHeader box, double scale, Color color)
+        {
+            var newColor = Color.FromArgb(80, color);
+            var brush = new SolidBrush(newColor);
+
+            var newPoints = new List<PointF>();
+
+            foreach (var point in poly.Points)
+            {
+                newPoints.Add(new PointF((float)((point.X - box.Xmin) * scale), (float)((box.Ymax - point.Y) * scale)));
+            }
+            graphics.FillPolygon(brush, newPoints.ToArray());
+        }
+
 
         private static void DrawLine(Graphics graphics, ShapePoint point1, ShapePoint point2, BoundingBoxHeader box, double scale, Color color)
         {

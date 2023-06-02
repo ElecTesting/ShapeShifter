@@ -9,9 +9,15 @@ using ShapeShifter.Storage;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing.Imaging;
 
+
+
+
+//var regionTest = ShapeShifter.ShapeShifter.ProcessShapeFile(@"D:\_OS_\BoundaryData\district_borough_unitary_region.shp");
+
+// Some DBase Reader testing code
+
 //var dbasefile = @"D:\EsriData\Bradford\02_Renamed\AR.dbf";
 //var dbasefile = @"D:\EsriData\Mundesley\MUNDSLEY_Buildings Or Structure Text_text.dbf";
-
 
 // dbase reader testing
 //using (var dbaseReader = new DBaseReader.DBaseReader(dbasefile))
@@ -25,8 +31,9 @@ using System.Drawing.Imaging;
 //    }
 //}
 
+// Some Shape rendering testing code
 
-var shapeFolder = @"D:\Mapping\Oxfordshire\MiltonRAB";
+var shapeFolder = @"D:\EsriData\Bradford\02_Renamed";
 // shape shifter testing
 var shapeManager = new ShapeManager(shapeFolder);
 
@@ -39,6 +46,12 @@ var area = new BoundingBox()
    Ymin = shapeManager.Ymin,
    Ymax = shapeManager.Ymax
 };
+
+var crossRef = ShapeShifter.ShapeShifter.CreateShapeCacheFromFile(@"D:\_OS_\BoundaryData\district_borough_unitary_ward_region.shp");
+
+shapeManager.CrossRef(crossRef);
+
+
 var itemCount = shapeManager.SetArea(area);
 var shapeFile = shapeManager.GetArea();
 

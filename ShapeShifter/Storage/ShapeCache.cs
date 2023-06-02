@@ -12,5 +12,6 @@ namespace ShapeShifter.Storage
         public string DbfPath { get; set; } = "";
         public List<ShapeCacheItem> Items { get; set; } = new List<ShapeCacheItem>();
         public BoundingBoxHeader BoundingBox { get; set; } = new BoundingBoxHeader();
+        public bool Overlay { get; set; } = false;
     }
 }

@@ -173,6 +173,7 @@ namespace ShapeShifter
             return shapeCache;
         }
 
+
         private static int GetOrdinalFromList(DBaseReader.DBaseReader dbf, string[] names)
         {
             var ordinal = 0;
@@ -573,7 +574,6 @@ namespace ShapeShifter
          * takes a pre-trimmed cache file and converts it to a shape file
          * adding the additional meta data from the dbf files
          */
-
         private static void CacheToShape(ShapeCache cache, ShapeFile shapeFile)
         {
             using (var reader = new BinReader(new FileStream(cache.FilePath, FileMode.Open, FileAccess.Read)))
@@ -640,7 +640,15 @@ namespace ShapeShifter
                             case ShapeType.Polygon:
                                 var poly = ReadPolyGon(reader);
                                 poly.Color = item.FeatureColor;
-                                shapeFile.Polygons.Add(poly);
+                                if (cache.Overlay)
+                                {
+                                    poly.Color = Color.FromArgb(50, item.FeatureColor);
+                                    shapeFile.PolygonOverlays.Add(poly);
+                                }
+                                else
+                                {
+                                    shapeFile.Polygons.Add(poly);
+                                }
                                 break;
                             case ShapeType.PolyLineZ:
                                 var polyLine = ReadPolyLineZ(reader);
