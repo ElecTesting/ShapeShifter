@@ -40,6 +40,17 @@ namespace ShapeShifter
             "WARD_NAME"
         };
 
+        private static string[] _anchorNames = new string[]
+        {
+            "ANCHOR"
+        };
+
+
+        private static string[] _angleNames = new string[]
+        {
+            "TEXTANGLE"
+        };
+
         /* Collect all shape files and returns a single ShapeFile object
          * 
          */
@@ -570,6 +581,8 @@ namespace ShapeShifter
                 using (var dbf = new DBaseReader.DBaseReader(cache.DbfPath))
                 {
                     var textStringOrdinal = GetOrdinalFromList(dbf, _textStringNames);
+                    var anchorOrdinal = GetOrdinalFromList(dbf, _anchorNames);
+                    var angleOrdrinal = GetOrdinalFromList(dbf, _angleNames);
 
                     foreach (var item in cache.Items)
                     {
@@ -577,12 +590,26 @@ namespace ShapeShifter
                         reader.Goto(item.FileOffset);
 
                         var textString = "";
+                        var anchor = "";
+                        double angle = 0;
                         if (textStringOrdinal >= 0)
                         {
                             // move dbf to correct record
                             dbf.GotoRow(item.RecordId - 1);
                             textString = dbf.GetString(textStringOrdinal);
+
+                            if (anchorOrdinal >= 0)
+                            {
+                                anchor = dbf.GetString(anchorOrdinal);
+                            }
+
+                            if (angleOrdrinal >= 0)
+                            {
+                                angle = dbf.GetDouble(angleOrdrinal);
+                            }
                         }
+
+
 
                         var shapeType = (ShapeType)reader.ReadInt32();
 
@@ -594,7 +621,9 @@ namespace ShapeShifter
                             case ShapeType.Point:
                                 var point = ReadPointRecord(reader);
                                 point.TextString = textString;
+                                point.Anchor = anchor;
                                 point.Color = item.FeatureColor;
+                                point.TextAngle = angle;
                                 shapeFile.Points.Add(point);
                                 break;
                             case ShapeType.PolyLine:
@@ -603,6 +632,8 @@ namespace ShapeShifter
                                 if (!string.IsNullOrEmpty(textString))
                                 {
                                     line.TextString = textString;
+                                    line.Anchor = anchor;
+                                    line.TextAngle = angle;
                                 }
                                 shapeFile.PolyLines.Add(line);
                                 break;

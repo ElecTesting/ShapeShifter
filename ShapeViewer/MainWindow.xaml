@@ -46,7 +46,7 @@
         <TextBlock x:Name="HeightText" HorizontalAlignment="Left" Margin="954,593,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
         <TextBlock x:Name="ZoomVal" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Zoom" VerticalAlignment="Top"/>
 
-        <local:ZoomBorder MouseMove="Map_MouseMove"  x:Name="_mapViewGrid" ClipToBounds="True" Background="Gray" Margin="64,18,0,0" Refresh="_mapViewGrid_Refresh" Move="_mapViewGrid_Move" Zoom="_mapViewGrid_Zoom" Height="720" VerticalAlignment="Top" HorizontalAlignment="Left" Width="825">
+        <local:ZoomBorder MouseMove="Map_MouseMove" MouseLeave="Map_MouseLeave" MouseDown="Map_MouseDown" x:Name="_mapViewGrid" ClipToBounds="True" Background="Gray" Margin="64,18,0,0" Refresh="_mapViewGrid_Refresh" Move="_mapViewGrid_Move" Zoom="_mapViewGrid_Zoom" Height="720" VerticalAlignment="Top" HorizontalAlignment="Left" Width="825">
             <Image HorizontalAlignment="Stretch" Width="NaN"/>
         </local:ZoomBorder>
         <TextBlock Name="MapX" HorizontalAlignment="Left" Margin="1140,606,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
@@ -70,5 +70,8 @@
         <TextBlock HorizontalAlignment="Left" Margin="1140,492,0,0" TextWrapping="Wrap" Text="Position Y" VerticalAlignment="Top"/>
         <TextBlock x:Name="_pointPosX" HorizontalAlignment="Left" Margin="1197,476,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top"/>
         <TextBlock x:Name="_pointPosY" HorizontalAlignment="Left" Margin="1197,492,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top"/>
+        <Popup Name="floatingTip" AllowsTransparency="True" Placement="Relative" PlacementTarget="{Binding ElementName=_mapViewGrid}">
+            <TextBlock></TextBlock>
+        </Popup>
     </Grid>
 </Window>

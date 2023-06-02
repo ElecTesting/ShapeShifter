@@ -49,7 +49,7 @@ namespace ShapeRender
                         {
                             foreach (var polyLine in item.PolyLines)
                             {
-                                DrawText(graphics, polyLine.Points[0].X, polyLine.Points[0].Y, shapeFile.BoundingBox, scale, item.TextString);
+                                DrawText(graphics, polyLine.Points[0].X, polyLine.Points[0].Y, shapeFile.BoundingBox, scale, item.TextString, item.Anchor, item.TextAngle);
                             }
                         }
                     }
@@ -63,7 +63,7 @@ namespace ShapeRender
                     {
                         if (!string.IsNullOrWhiteSpace(item.TextString))
                         {
-                            DrawTextPoint(graphics, item, shapeFile.BoundingBox, scale);
+                            DrawTextPoint(graphics, item, shapeFile.BoundingBox, scale, item.Anchor, item.TextAngle);
                         }
                     }
                 }
@@ -95,16 +95,56 @@ namespace ShapeRender
             graphics.DrawLine(pen, p1, p2);
         }
 
-        private static void DrawText(Graphics graphics, double x, double y, BoundingBoxHeader box, double scale, string text)
+        private static void DrawText(Graphics graphics, double x, double y, BoundingBoxHeader box, double scale, string text, string anchor, double angle)
         {
             var p1 = new PointF((float)((x - box.Xmin) * scale), (float)((box.Ymax - y) * scale));
+            float width = 0;
+            float height = 0;
+
+            if (!string.IsNullOrEmpty(anchor))
+            {
+                var textSize = graphics.MeasureString(text, new Font("Courier New", 10));
+                width = textSize.Width;
+                height = textSize.Height;
+                //var textSize = graphics.MeasureString(text, new Font("Courier New", 10), new PointF(p1.X, p1.Y), StringFormat.GenericTypographic, out width, out height);
+            }
+            
+            // anchor positioning
+            // gdi draws from a NW anchor point
+            // so we adjust from there
+            switch (anchor)
+            {
+                case "SW":
+                    p1.Y -= height;
+                    break;
+                case "S":
+                    p1.Y -= height;
+                    p1.X -= width / 2;
+                    break;
+                case "N":
+                    p1.X -= width / 2;
+                    break;
+                case "NE":
+                    p1.X -= width;
+                    break;
+                case "":
+                    break;
+                default:
+                    break;
+            }
+
+            //graphics.TranslateTransform(p1.X, p1.Y);   
+            //graphics.RotateTransform((float)angle);
             graphics.DrawString(text, new Font("Courier New", 10), Brushes.Black, p1.X, p1.Y);
+            //graphics.RotateTransform(0);
+            //graphics.TranslateTransform(0, 0);
         }
 
-        private static void DrawTextPoint(Graphics graphics, ShapePoint point, BoundingBoxHeader box, double scale)
+        private static void DrawTextPoint(Graphics graphics, ShapePoint point, BoundingBoxHeader box, double scale, string anchor, double angle)
         {
-            var p1 = new PointF((float)((point.X - box.Xmin) * scale), (float)((box.Ymax - point.Y) * scale));
-            graphics.DrawString(point.TextString, new Font("Courier New", 10), Brushes.Black, p1.X, p1.Y);
+            DrawText(graphics, point.X, point.Y, box, scale, point.TextString, anchor, angle);
+            //var p1 = new PointF((float)((point.X - box.Xmin) * scale), (float)((box.Ymax - point.Y) * scale));
+            //graphics.DrawString(point.TextString, new Font("Courier New", 10), Brushes.Black, p1.X, p1.Y);
         }
     }
 #pragma warning restore CA1416 // Validate platform compatibility

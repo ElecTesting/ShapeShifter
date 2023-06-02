@@ -37,6 +37,10 @@ namespace ShapeViewer
         private System.Windows.Shapes.Rectangle _viewWindow;
         private bool _rendering = false;
         private bool _fileLoaded = false;
+        private bool _hideMouseTip = false;
+
+        private string _shapeFolder = "";
+        private string _exportFolder = "";
 
         public ObservableCollection<ShapeSummary> _shapeEntities { get; set; } = new ObservableCollection<ShapeSummary>();
 
@@ -58,10 +62,20 @@ namespace ShapeViewer
                 AllowMultiSelect = false
             };
 
+            if (!string.IsNullOrEmpty(_shapeFolder))
+            {
+                openFolder.InitialFolder = _shapeFolder;
+            }
+
+
             var result = openFolder.ShowDialog();
+
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 var path = openFolder.SelectedFolder;
+
+                _shapeFolder = path;
+
                 var shapeFileList = Directory.GetFiles(path, "*.shp");
                 if (shapeFileList.Length == 0)
                 {
@@ -154,15 +168,7 @@ namespace ShapeViewer
                 TextAreaYmin.Text = $"{box.Ymin:0}";
                 TextAreaYmax.Text = $"{box.Ymax:0}";
 
-                var exclusionList = new List<string>();
-
-                foreach (var item in _shapeEntities)
-                {
-                    if (!item.IsSelected)
-                    {
-                        exclusionList.Add(item.FilePath);
-                    }
-                }
+                var exclusionList = GetExclusionList();
 
                 var itemCount = _shapeManager.SetArea(box, exclusionList);
                 ItemsArea.Text = itemCount.ToString();
@@ -205,6 +211,20 @@ namespace ShapeViewer
             }
         }
 
+        private List<string> GetExclusionList()
+        {
+            var exclusionList = new List<string>();
+
+            foreach (var item in _shapeEntities)
+            {
+                if (!item.IsSelected)
+                {
+                    exclusionList.Add(item.FilePath);
+                }
+            }
+            return exclusionList;
+        }
+
         private void Button_SetArea(object sender, RoutedEventArgs e)
         {
             SetNewArea();
@@ -226,6 +246,8 @@ namespace ShapeViewer
             {
                 return;
             }
+
+            _hideMouseTip = false;
 
             var currentX = _windowX * _shapeManager.Width;
             var scaleX = _metersPerPixel / _mapViewGrid.RenderSize.Width;
@@ -274,20 +296,38 @@ namespace ShapeViewer
 
         private void Button_MapExport(object sender, RoutedEventArgs e)
         {
+            if (_shapeManager == null)
+            {
+                return;
+            }
+
             var totalItems = _shapeManager.Summary.Sum(s => s.ItemCount);
 
             if (totalItems > 500000)
             {
-                if (MessageBox.Show("Large map, are you sure?") == MessageBoxResult.Cancel)
+                if (MessageBox.Show("Large map, are you sure?",  "", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
                 {
                     return;
                 }
                 
             }
 
-            var saveFileDialog = new SaveFileDialog();
+            var saveFileDialog = new SaveFileDialog()
+            {
+                Filter = "PNG Image|*.png",
+                Title = "Save map image",
+                FileName = "map.png"
+            };
+
+            if (!string.IsNullOrEmpty(_exportFolder))
+            {
+                saveFileDialog.InitialDirectory = _exportFolder;
+            }
+
             if (saveFileDialog.ShowDialog() == true)
             {
+                _exportFolder = System.IO.Path.GetDirectoryName(saveFileDialog.FileName);
+
                 var width = (int)_mapViewGrid.RenderSize.Width;
                 var height = (int)_mapViewGrid.RenderSize.Height;
 
@@ -299,12 +339,20 @@ namespace ShapeViewer
                     Ymin = _shapeManager.Ymin
                 };
 
-                _shapeManager.SetArea(totalBox);
+                var exclusionList = GetExclusionList();
+
+                _shapeManager.SetArea(totalBox, exclusionList);
+                
                 var shapeFile = _shapeManager.GetArea();
 
-                var saveImage = ShapeRender.ShapeRender.RenderShapeFile(shapeFile, 10000, 10000, false);
+                var imageWidht = 10000;
+                var imageHeight = (int)(10000 * (_shapeManager.Height / _shapeManager.Width));
+
+                var saveImage = ShapeRender.ShapeRender.RenderShapeFile(shapeFile, imageWidht, imageHeight, false);
 
                 saveImage.Save(saveFileDialog.FileName, ImageFormat.Png);
+
+                MessageBox.Show("Map export complete");
             }
         }
 
@@ -315,16 +363,49 @@ namespace ShapeViewer
                 // set box pan limits and sizes
                 var aspectY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
 
-                var x = (e.GetPosition((IInputElement)sender).X / _mapViewGrid.RenderSize.Width) - 0.5;
-                var y = -((e.GetPosition((IInputElement)sender).Y / _mapViewGrid.RenderSize.Height) - 0.5);
+                var mouseX = e.GetPosition((IInputElement)sender).X;
+                var mouseY = e.GetPosition((IInputElement)sender).Y;
+
+                var x = (mouseX / _mapViewGrid.RenderSize.Width) - 0.5;
+                var y = (mouseY / _mapViewGrid.RenderSize.Height) - 0.5;
                 x = (_windowX * _shapeManager.Width) + (x * _metersPerPixel);
-                y = (_windowY * _shapeManager.Height) + (y * _metersPerPixel * aspectY);
+                y = (_windowY * _shapeManager.Height) - (y * _metersPerPixel * aspectY);
+
                 x = _shapeManager.Xmin + x;
                 y = _shapeManager.Ymax - y;
-                _pointPosX.Text = $"{x:0}";
-                _pointPosY.Text = $"{y:0}";
+                //_pointPosX.Text = $"{x:0}";
+                //_pointPosY.Text = $"{y:0}";
+
+                if (!floatingTip.IsOpen) 
+                { 
+                    floatingTip.IsOpen = true; 
+                }
+
+                floatingTip.HorizontalOffset = mouseX + 20;
+                floatingTip.VerticalOffset = mouseY;
+                if (!_hideMouseTip)
+                {
+                    var textBlock = (TextBlock)floatingTip.Child;
+                    textBlock.Text = $"X: {x:0} \nY: {y:0}";
+                }
             }
         }
+
+        private void Map_MouseLeave(object sender, MouseEventArgs e)
+        {
+            floatingTip.IsOpen = false;
+        }
+
+        private void Map_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _hideMouseTip = true;
+        }
+
+        private void Map_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            _hideMouseTip = true;
+        }
+
     }
 }
 

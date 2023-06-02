@@ -13,5 +13,6 @@ namespace ShapeShifter.Storage
         public string TextString { get; set; } = "";
         public double TextAngle { get; set; } = 0;
         public Color Color { get; set; } = Color.Black;
+        public string Anchor { get; set; } = "";
     }
 }
