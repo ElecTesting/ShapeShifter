@@ -102,8 +102,8 @@ namespace ShapeRender
 
         private static void DrawPolyOverlay(Graphics graphics, BasePoloygon poly, BoundingBoxHeader box, double scale, Color color)
         {
-            var newColor = Color.FromArgb(80, color);
-            var brush = new SolidBrush(newColor);
+            var pen = new Pen(new SolidBrush(Color.Black), 1);
+            var brush = new SolidBrush(color);
 
             var newPoints = new List<PointF>();
 
@@ -112,6 +112,7 @@ namespace ShapeRender
                 newPoints.Add(new PointF((float)((point.X - box.Xmin) * scale), (float)((box.Ymax - point.Y) * scale)));
             }
             graphics.FillPolygon(brush, newPoints.ToArray());
+            graphics.DrawPolygon(pen, newPoints.ToArray());
         }
 
 

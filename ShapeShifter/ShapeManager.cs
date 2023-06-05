@@ -21,6 +21,8 @@ namespace ShapeShifter
         public double Width { get; set; }
         public double Height { get; set; }
 
+        public ShapeCache OverlayCache { get; set; } = new ShapeCache();
+
         public List<ShapeSummary> Summary { get; set; } = new List<ShapeSummary>();
 
         public int FileCount
@@ -60,8 +62,8 @@ namespace ShapeShifter
             }
 
             Xmin = _cache.Min(x => x.BoundingBox.Xmin);
-            Xmax = _cache.Max(x => x.BoundingBox.Xmax);   
-            Ymin = _cache.Min(x => x.BoundingBox.Ymin);   
+            Xmax = _cache.Max(x => x.BoundingBox.Xmax);
+            Ymin = _cache.Min(x => x.BoundingBox.Ymin);
             Ymax = _cache.Max(x => x.BoundingBox.Ymax);
             Width = Xmax - Xmin;
             Height = Ymax - Ymin;
@@ -132,6 +134,10 @@ namespace ShapeShifter
          */
         public void CrossRef(ShapeCache shapeCache)
         {
+            _cache.RemoveAll(c => c.Overlay == true);
+
+            OverlayCache = shapeCache;
+
             var fullMapArea = new BoundingBox()
             {
                 Xmin = Xmin,
@@ -139,16 +145,16 @@ namespace ShapeShifter
                 Ymin = Ymin,
                 Ymax = Ymax,
             };
-            shapeCache.Overlay = true;
+            OverlayCache.Overlay = true;
 
             Random rnd = new Random(1);
-            shapeCache.Items = shapeCache.Items.Where(x => x.Box.Intersects(fullMapArea)).ToList();
-            foreach (var item in shapeCache.Items)
+            OverlayCache.Items = OverlayCache.Items.Where(x => x.Box.Intersects(fullMapArea)).ToList();
+            foreach (var item in OverlayCache.Items)
             {
-                item.FeatureColor = Color.FromArgb(30, rnd.Next(0, 255), rnd.Next(0, 255), rnd.Next(0, 255));
+                item.FeatureColor = Color.FromArgb(255, rnd.Next(0, 255), rnd.Next(0, 255), rnd.Next(0, 255));
             }
 
-            shapeCache.BoundingBox = new BoundingBoxHeader()
+            OverlayCache.BoundingBox = new BoundingBoxHeader()
             {
                 Xmax = Xmax,
                 Xmin = Xmin,
@@ -156,9 +162,26 @@ namespace ShapeShifter
                 Ymin = Ymin
             };
 
-            _cache.Add(shapeCache);
+            //_cache.Add(OverlayCache);
         }
 
+        public List<string> GetOverlayHits()
+        {
+            var overlayHits = new List<string>();
 
+            if (OverlayCache != null)
+            {
+                using (var dbf = new DBaseReader.DBaseReader(OverlayCache.DbfPath))
+                {
+                    foreach (var item in OverlayCache.Items)
+                    {
+                        dbf.GotoRow(item.RecordId);
+                        overlayHits.Add(dbf.GetString("NAME"));
+                    }
+                }
+            }
+
+            return overlayHits;
+        }
     }
 }

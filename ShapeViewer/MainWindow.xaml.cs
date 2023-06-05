@@ -21,6 +21,11 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Collections.ObjectModel;
+using Newtonsoft.Json.Bson;
+using System.Windows.Media.Media3D;
+using System.Drawing.Drawing2D;
+using System.Xml.Serialization;
+using System.Reflection;
 
 namespace ShapeViewer
 {
@@ -39,21 +44,42 @@ namespace ShapeViewer
         private bool _fileLoaded = false;
         private bool _hideMouseTip = false;
 
+        private Bitmap _overviewImage;
+        private Bitmap _overlayImage;
+
         private string _shapeFolder = "";
         private string _exportFolder = "";
 
         public ObservableCollection<ShapeSummary> _shapeEntities { get; set; } = new ObservableCollection<ShapeSummary>();
+
+        private string _osMapFolder;
 
         public MainWindow()
         {
             InitializeComponent();
 
             _metersPerPixel = 1000;
-            
+
             _windowX = 0.5;
             _windowY = 0.5;
+
+            _osMapFolder = @"D:\_OS_\BoundaryData\";
+            LoadOSMaps();
         }
 
+        private void LoadOSMaps()
+        {
+            foreach (var filename in Directory.GetFiles(_osMapFolder, "*.shp"))
+            {
+                var osItem = new ShapeSummary()
+                {
+                    FileName = filename,
+                    FilePath = filename
+                };
+                _osMaps.Items.Add(osItem);
+            }
+        }
+            
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var openFolder = new FolderBrowserDialog()
@@ -84,6 +110,9 @@ namespace ShapeViewer
                 }
                 else
                 {
+                    _overviewImage = null;
+                    _overlayImage = null;
+
                     _shapeManager = new ShapeManager(path);
                     _folder = path;
                     ShowStats();
@@ -94,7 +123,9 @@ namespace ShapeViewer
                     _windowY = 0.5;
                     _fileLoaded = true;
                     ZoomSlider.Value = 1;
+                    _tabs.SelectedIndex = 0;
                     SetNewArea();
+                    _mapOverViewGrid.Reset();
                 }
             }
         }
@@ -126,8 +157,8 @@ namespace ShapeViewer
             YminView.Text = $"{_shapeManager.Ymin:0}";
             YmaxView.Text = $"{_shapeManager.Ymax:0}";
             ItemCount.Text = _shapeManager.RecordCount.ToString();
-            WidthText.Text = _shapeManager.Width.ToString();
-            HeightText.Text = _shapeManager.Height.ToString();
+            WidthText.Text = $"{_shapeManager.Width:0}";
+            HeightText.Text = $"{_shapeManager.Height:0}";
             //_windowX = _shapeManager.Width / 2;
             //_windowY = _shapeManager.Height / 2;
         }
@@ -139,75 +170,175 @@ namespace ShapeViewer
                 return;
             }
 
-            if (!_rendering)
+            //var metersX = _mapViewGrid.RenderSize.Width / _shapeManager.Width * _metersPerPixel;
+            //var metersY = _mapViewGrid.RenderSize.Height / _shapeManager.Height * _metersPerPixel;
+
+            var metersX = _metersPerPixel;
+            var scaleY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
+            var metersY = _metersPerPixel * scaleY;
+
+
+            var xmin = _shapeManager.Xmin + (_windowX * _shapeManager.Width) - (metersX / 2);
+            var xmax = xmin + metersX;
+            var ymin = _shapeManager.Ymin + (_windowY * _shapeManager.Height) - (metersY / 2);
+            var ymax = ymin + metersY;
+
+            var box = new BoundingBox()
             {
-                _rendering = true;
-                //var metersX = _mapViewGrid.RenderSize.Width / _shapeManager.Width * _metersPerPixel;
-                //var metersY = _mapViewGrid.RenderSize.Height / _shapeManager.Height * _metersPerPixel;
+                Xmin = xmin,
+                Xmax = xmax,
+                Ymin = ymin,
+                Ymax = ymax
+            };
 
-                var metersX = _metersPerPixel;
-                var scaleY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
-                var metersY = _metersPerPixel * scaleY;
+            TextAreaXmin.Text = $"{box.Xmin:0}";
+            TextAreaXmax.Text = $"{box.Xmax:0}";
+            TextAreaYmin.Text = $"{box.Ymin:0}";
+            TextAreaYmax.Text = $"{box.Ymax:0}";
 
+            var exclusionList = GetExclusionList();
+            var itemCount = _shapeManager.SetArea(box, exclusionList);
+            ItemsArea.Text = itemCount.ToString();
+            var areaOnly = _shapeManager.GetArea();
 
-                var xmin = _shapeManager.Xmin + (_windowX * _shapeManager.Width) - (metersX / 2);
-                var xmax = xmin + metersX;
-                var ymin = _shapeManager.Ymin + (_windowY * _shapeManager.Height) - (metersY / 2);
-                var ymax = ymin + metersY;
+            //ImageDump.Stretch = Stretch.Uniform;
+            //ImageDump.StretchDirection = StretchDirection.Both;
+
+            //var shapeTest = ShapeShifter.ShapeShifter.MergeAllShapeFiles(_folder);
+            var width = (int)_mapViewGrid.RenderSize.Width;
+            var height = (int)_mapViewGrid.RenderSize.Height;
+            bool renderText = _metersPerPixel < 300 ? true : false;
+
+            var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, width, height, renderText);
+                
+            using (MemoryStream memory = new MemoryStream())
+            {
+                testImage.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                ((System.Windows.Controls.Image)_mapViewGrid.Child).Source = bitmapImage;
+            }
+
+            // set box pan limits and sizes
+            var aspectY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
+
+            _mapViewGrid.AreaWidth = _shapeManager.Width;
+            _mapViewGrid.AreaHeight = _shapeManager.Height;
+            _mapViewGrid.BoxWidth = _metersPerPixel;
+            _mapViewGrid.BoxHeight = _metersPerPixel * aspectY;
+            _mapViewGrid.BoxOriginX = _windowX * _shapeManager.Width;
+            _mapViewGrid.BoxOriginY = _windowY * _shapeManager.Height;
+            _mapViewGrid.AreaScale = _metersPerPixel / 1000;
+        }
+
+        private void SetOverview()
+        {
+            if (_shapeManager == null)
+            {
+                return;
+            }
+
+            if (_overviewImage == null)
+            {
 
                 var box = new BoundingBox()
                 {
-                    Xmin = xmin,
-                    Xmax = xmax,
-                    Ymin = ymin,
-                    Ymax = ymax
+                    Xmin = _shapeManager.Xmin,
+                    Xmax = _shapeManager.Xmax,
+                    Ymin = _shapeManager.Ymin,
+                    Ymax = _shapeManager.Ymax
                 };
 
-                TextAreaXmin.Text = $"{box.Xmin:0}";
-                TextAreaXmax.Text = $"{box.Xmax:0}";
-                TextAreaYmin.Text = $"{box.Ymin:0}";
-                TextAreaYmax.Text = $"{box.Ymax:0}";
-
                 var exclusionList = GetExclusionList();
-
-                var itemCount = _shapeManager.SetArea(box, exclusionList);
-                ItemsArea.Text = itemCount.ToString();
-
+                _shapeManager.SetArea(box, exclusionList);
                 var areaOnly = _shapeManager.GetArea();
 
-                //ImageDump.Stretch = Stretch.Uniform;
-                //ImageDump.StretchDirection = StretchDirection.Both;
-
-                //var shapeTest = ShapeShifter.ShapeShifter.MergeAllShapeFiles(_folder);
                 var width = (int)_mapViewGrid.RenderSize.Width;
-                var height = (int)_mapViewGrid.RenderSize.Height;
-                bool renderText = _metersPerPixel < 300 ? true : false;
+                var aspectY = _shapeManager.Height / _shapeManager.Width;
+                var height = (int)(_mapViewGrid.RenderSize.Width * aspectY);
 
-                var testImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, width, height, renderText);
-                
+                _overviewImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, width, height, false);
+
+                CompositeOverview();
+            }
+        }
+
+        private void CompositeOverview()
+        {
+            if (_overviewImage == null)
+            {
+                return;
+            }
+
+            Bitmap resultBitmap = new Bitmap(_overviewImage.Width, _overviewImage.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            using (var graphics = Graphics.FromImage(resultBitmap))
+            { 
+                graphics.Clear(System.Drawing.Color.Transparent);
+                var alpha1 = SetImageOpacity(_overviewImage, 1);
+                graphics.DrawImage(_overviewImage, 0, 0);
+
+                if (_overlayImage != null)
+                {
+                    var alpha2 = SetImageOpacity(_overlayImage, 0.5f);
+                    graphics.DrawImage(alpha2, 0, 0);
+                }
+
                 using (MemoryStream memory = new MemoryStream())
                 {
-                    testImage.Save(memory, ImageFormat.Png);
+                    resultBitmap.Save(memory, ImageFormat.Png);
                     memory.Position = 0;
                     BitmapImage bitmapImage = new BitmapImage();
                     bitmapImage.BeginInit();
                     bitmapImage.StreamSource = memory;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.EndInit();
-                    ((System.Windows.Controls.Image)_mapViewGrid.Child).Source = bitmapImage;
+                    ((System.Windows.Controls.Image)_mapOverViewGrid.Child).Source = bitmapImage;
                 }
 
-                // set box pan limits and sizes
-                var aspectY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
+                _mapOverViewGrid.Height = resultBitmap.Height;
 
-                _mapViewGrid.AreaWidth = _shapeManager.Width;
-                _mapViewGrid.AreaHeight = _shapeManager.Height;
-                _mapViewGrid.BoxWidth = _metersPerPixel;
-                _mapViewGrid.BoxHeight = _metersPerPixel * aspectY;
-                _mapViewGrid.BoxOriginX = _windowX * _shapeManager.Width;
-                _mapViewGrid.BoxOriginY = _windowY * _shapeManager.Height;
-                _mapViewGrid.AreaScale = _metersPerPixel / 1000;
-                _rendering = false;
+            }
+
+        }
+
+        private Bitmap SetImageOpacity(Bitmap image, float opacity)
+        {
+            try
+            {
+                //create a Bitmap the size of the image provided  
+                Bitmap bmp = new Bitmap(image.Width, image.Height);
+
+                //create a graphics object from the image  
+                using (Graphics gfx = Graphics.FromImage(bmp))
+                {
+
+                    //create a color matrix object  
+                    ColorMatrix matrix = new ColorMatrix();
+
+                    //set the opacity  
+                    matrix.Matrix33 = opacity;
+
+                    //create image attributes  
+                    ImageAttributes attributes = new ImageAttributes();
+
+                    //set the color(opacity) of the image  
+                    attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+
+                    //now draw the image  
+                    gfx.DrawImage(image, new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
+                }
+                return bmp;
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.Message);
+                throw ex;
+                //return null;
             }
         }
 
@@ -264,6 +395,7 @@ namespace ShapeViewer
             _windowY = distFractionY;
             
             _mapViewGrid.Reset();
+            
             SetNewArea();
         }
 
@@ -274,7 +406,7 @@ namespace ShapeViewer
             var right = panMove.BoxX + (panMove.BoxWidth / 2);
             var top = panMove.BoxY - (panMove.BoxHeight / 2);
             var bottom = panMove.BoxY + (panMove.BoxHeight / 2);
-
+            /*
             MapX.Text = $"{panMove.BoxX:0}";
             MapY.Text = $"{panMove.BoxY:0}";
 
@@ -285,6 +417,7 @@ namespace ShapeViewer
 
             MapWidth.Text = $"{panMove.AreaWidth:0}";
             MapHeight.Text = $"{panMove.AreaHeight:0}";
+            */
         }
 
         private void _mapViewGrid_Zoom(object sender, PanZoomRefreshEventArgs e)
@@ -376,24 +509,66 @@ namespace ShapeViewer
                 //_pointPosX.Text = $"{x:0}";
                 //_pointPosY.Text = $"{y:0}";
 
-                if (!floatingTip.IsOpen) 
+                if (!_detailToolTip.IsOpen) 
                 { 
-                    floatingTip.IsOpen = true; 
+                    _detailToolTip.IsOpen = true; 
                 }
 
-                floatingTip.HorizontalOffset = mouseX + 20;
-                floatingTip.VerticalOffset = mouseY;
+                _detailToolTip.HorizontalOffset = mouseX + 20;
+                _detailToolTip.VerticalOffset = mouseY;
                 if (!_hideMouseTip)
                 {
-                    var textBlock = (TextBlock)floatingTip.Child;
+                    var textBlock = (TextBlock)_detailToolTip.Child;
                     textBlock.Text = $"X: {x:0} \nY: {y:0}";
                 }
             }
         }
 
+        private void Overview_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_overviewImage == null)
+                return;
+
+            if (_shapeManager != null)
+            {
+                // set box pan limits and sizes
+                var aspectY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
+
+                var mouseX = e.GetPosition((IInputElement)sender).X;
+                var mouseY = e.GetPosition((IInputElement)sender).Y;
+
+                var scrollDiff = _mapOverViewGrid.OffsetY;
+                var x = (mouseX / _overviewImage.Width) * _shapeManager.Width;
+                var y = (1 - ((mouseY - scrollDiff) / _overviewImage.Height)) * _shapeManager.Height;
+                
+                x = _shapeManager.Xmin + x;
+                y = _shapeManager.Ymax - y;
+
+                if (!_overviewToolTip.IsOpen)
+                {
+                    _overviewToolTip.IsOpen = true;
+                }
+                _detailToolTip.IsOpen = false;
+
+                _overviewToolTip.HorizontalOffset = mouseX + 20;
+                _overviewToolTip.VerticalOffset = mouseY;
+
+                if (!_hideMouseTip)
+                {
+                    var textBlock = (TextBlock)_overviewToolTip.Child;
+                    textBlock.Text = $"X: {x:0} \nY: {y:0}";
+                }
+            }
+        }
+
+        private void Overview_MouseLeave(object sender, MouseEventArgs e)
+        {
+            _overviewToolTip.IsOpen = false;
+        }
+
         private void Map_MouseLeave(object sender, MouseEventArgs e)
         {
-            floatingTip.IsOpen = false;
+            _detailToolTip.IsOpen = false;
         }
 
         private void Map_MouseDown(object sender, MouseButtonEventArgs e)
@@ -401,11 +576,132 @@ namespace ShapeViewer
             _hideMouseTip = true;
         }
 
+        private void Overview_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                _hideMouseTip = true;
+            }
+            
+            if (e.RightButton == MouseButtonState.Pressed)
+            {
+                OverviewToDetail(sender, e);
+            }
+        }
+
+        private void OverviewToDetail(object sender, MouseButtonEventArgs e)
+        {
+            if (_overviewImage == null)
+                return;
+
+            _overviewToolTip.IsOpen = false;
+            _hideMouseTip = false;
+
+            var mouseX = e.GetPosition((IInputElement)sender).X;
+            var mouseY = e.GetPosition((IInputElement)sender).Y;
+
+            var scrollDiff = _mapOverViewGrid.OffsetY;
+            var x = (mouseX / _overviewImage.Width);
+            var y = 1 - ((mouseY - scrollDiff) / _overviewImage.Height);
+            _windowX = x;
+            _windowY = y;
+            SetNewArea();
+            _tabs.SelectedIndex = 0;
+
+        }
+
         private void Map_MouseUp(object sender, MouseButtonEventArgs e)
         {
             _hideMouseTip = true;
         }
 
+        private void ApplyOverlay_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyOverlay();
+        }
+
+        private void ApplyOverlay()
+        {
+            var osMap = (ShapeSummary)_osMaps.SelectedItem;
+
+            var crossRef = ShapeShifter.ShapeShifter.CreateShapeCacheFromFile(osMap.FilePath);
+
+            _shapeManager.CrossRef(crossRef);
+
+            OverlayHitsText.Text = $"{_shapeManager.OverlayCache.Items.Count}";
+            var hitList = _shapeManager.GetOverlayHits();
+            _osHits.Items.Clear();
+            foreach (var hit in hitList)
+            {
+                _osHits.Items.Add(hit);
+            }
+
+            GetOverlayImage();
+            CompositeOverview();
+            //SetNewArea();
+
+        }
+
+        private void GetOverlayImage()
+        {
+            if (_shapeManager == null)
+            {
+                return;
+            }
+
+            if (_osMaps.SelectedItem == null)
+            {
+                return;
+            }
+
+            var box = new BoundingBox()
+            {
+                Xmax = _shapeManager.Xmax,
+                Xmin = _shapeManager.Xmin,
+                Ymin = _shapeManager.Ymin,
+                Ymax = _shapeManager.Ymax
+            };
+
+            var tempList = new List<ShapeCache>();
+            tempList.Add(_shapeManager.OverlayCache);
+
+            var overlayShape = ShapeShifter.ShapeShifter.CreateShapeFileFromCache(tempList, box);
+
+            var width = (int)_mapViewGrid.RenderSize.Width;
+
+            var aspectY = _shapeManager.Height / _shapeManager.Width;
+
+            var height = (int)(_mapViewGrid.RenderSize.Width * aspectY);
+
+            _overlayImage = ShapeRender.ShapeRender.RenderShapeFile(overlayShape, width, height, false);
+        }
+        
+
+        private void _tabOverview_Selected(object sender, RoutedEventArgs e)
+        {
+            SetOverview();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Button_RefreshOveriew(object sender, RoutedEventArgs e)
+        {
+            if (_shapeManager == null)
+            {
+                return;
+            }
+
+            _overviewImage = null;
+            SetOverview();
+        }
+
+        private void Overview_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            _hideMouseTip = false;
+        }
     }
 }
 

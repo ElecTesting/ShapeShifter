@@ -574,7 +574,7 @@ namespace ShapeShifter
          * takes a pre-trimmed cache file and converts it to a shape file
          * adding the additional meta data from the dbf files
          */
-        private static void CacheToShape(ShapeCache cache, ShapeFile shapeFile)
+        public static void CacheToShape(ShapeCache cache, ShapeFile shapeFile)
         {
             using (var reader = new BinReader(new FileStream(cache.FilePath, FileMode.Open, FileAccess.Read)))
             {
@@ -608,8 +608,6 @@ namespace ShapeShifter
                                 angle = dbf.GetDouble(angleOrdrinal);
                             }
                         }
-
-
 
                         var shapeType = (ShapeType)reader.ReadInt32();
 

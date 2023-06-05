@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShapeViewer"
         mc:Ignorable="d"
-        Title="Shape Viewer" Height="800" Width="1400">
+        Title="Shape Shifter" Height="800" Width="1400">
     <Grid Name="GridControls" Margin="0,0,0,0">
         <Slider Name="ZoomSlider" HorizontalAlignment="Left" Height="17" Margin="-123,174,0,0" VerticalAlignment="Top" Width="296" RenderTransformOrigin="0.5,0.5" ValueChanged="ZoomSlider_ValueChanged" Minimum="0" Maximum="1">
             <Slider.RenderTransform>
@@ -18,45 +18,34 @@
             </Slider.RenderTransform>
         </Slider>
         <Button Content="Open Shape Folder" HorizontalAlignment="Left" Margin="909,21,0,0" VerticalAlignment="Top" Height="26" Width="124" Click="Button_Click"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,476,0,0" TextWrapping="Wrap" Text="Xmin" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,497,0,0" TextWrapping="Wrap" Text="Xmax" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,518,0,0" TextWrapping="Wrap" Text="Ymin" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,539,0,0" TextWrapping="Wrap" Text="Ymax" VerticalAlignment="Top" Width="40"/>
-        <TextBlock Name="XminView" HorizontalAlignment="Left" Margin="954,476,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock Name="XmaxView" HorizontalAlignment="Left" Margin="954,497,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock Name="YminView" HorizontalAlignment="Left" Margin="954,518,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock Name="YmaxView" HorizontalAlignment="Left" Margin="954,539,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,455,0,0" TextWrapping="Wrap" Text="Total Map Area" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,635,0,0" TextWrapping="Wrap" Text="Xmin" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,656,0,0" TextWrapping="Wrap" Text="Xmax" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,677,0,0" TextWrapping="Wrap" Text="Ymin" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,697,0,0" TextWrapping="Wrap" Text="Ymax" VerticalAlignment="Top" Width="40"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,614,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="View "/><Run Text="Map Area"/></TextBlock>
-        <TextBlock Name="TextAreaXmin" HorizontalAlignment="Left" Margin="954,635,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBlock Name="TextAreaXmax" HorizontalAlignment="Left" Margin="954,656,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBlock Name="TextAreaYmin" HorizontalAlignment="Left" Margin="954,677,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBlock Name="TextAreaYmax" HorizontalAlignment="Left" Margin="954,697,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,560,0,0" TextWrapping="Wrap" Text="Items" VerticalAlignment="Top" Width="40"/>
-        <TextBlock Name="ItemCount" HorizontalAlignment="Left" Margin="954,560,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,715,0,0" TextWrapping="Wrap" Text="Items" VerticalAlignment="Top" Width="40"/>
-        <TextBlock Name="ItemsArea" HorizontalAlignment="Left" Margin="954,715,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock HorizontalAlignment="Left" Margin="914,576,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="40"><Run Language="en-gb" Text="Width"/></TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="914,592,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="40" RenderTransformOrigin="0.5,2.102"><Run Language="en-gb" Text="Height"/></TextBlock>
-        <TextBlock x:Name="WidthText" HorizontalAlignment="Left" Margin="954,576,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
-        <TextBlock x:Name="HeightText" HorizontalAlignment="Left" Margin="954,593,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="126"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,582,0,0" TextWrapping="Wrap" Text="Xmin" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,603,0,0" TextWrapping="Wrap" Text="Xmax" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,624,0,0" TextWrapping="Wrap" Text="Ymin" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,645,0,0" TextWrapping="Wrap" Text="Ymax" VerticalAlignment="Top" Width="40"/>
+        <TextBlock Name="XminView" HorizontalAlignment="Left" Margin="956,582,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="126"/>
+        <TextBlock Name="XmaxView" HorizontalAlignment="Left" Margin="956,603,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="126"/>
+        <TextBlock Name="YminView" HorizontalAlignment="Left" Margin="956,624,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="126"/>
+        <TextBlock Name="YmaxView" HorizontalAlignment="Left" Margin="956,645,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="126"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,561,0,0" TextWrapping="Wrap" Text="Total Map Area" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="1112,581,0,0" TextWrapping="Wrap" Text="Xmin" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="1112,602,0,0" TextWrapping="Wrap" Text="Xmax" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="1112,623,0,0" TextWrapping="Wrap" Text="Ymin" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="1112,643,0,0" TextWrapping="Wrap" Text="Ymax" VerticalAlignment="Top" Width="40"/>
+        <TextBlock HorizontalAlignment="Left" Margin="1112,561,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="Visible Area"/></TextBlock>
+        <TextBlock Name="TextAreaXmin" HorizontalAlignment="Left" Margin="1152,581,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="120"/>
+        <TextBlock Name="TextAreaXmax" HorizontalAlignment="Left" Margin="1152,602,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="120"/>
+        <TextBlock Name="TextAreaYmin" HorizontalAlignment="Left" Margin="1152,623,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="120"/>
+        <TextBlock Name="TextAreaYmax" HorizontalAlignment="Left" Margin="1152,643,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="120"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,666,0,0" TextWrapping="Wrap" Text="Items" VerticalAlignment="Top" Width="40"/>
+        <TextBlock Name="ItemCount" HorizontalAlignment="Left" Margin="956,666,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="126"/>
+        <TextBlock HorizontalAlignment="Left" Margin="1112,661,0,0" TextWrapping="Wrap" Text="Items" VerticalAlignment="Top" Width="40"/>
+        <TextBlock Name="ItemsArea" HorizontalAlignment="Left" Margin="1152,661,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="126"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,687,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="40"><Run Language="en-gb" Text="Width"/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="916,709,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="40" RenderTransformOrigin="0.5,2.102"><Run Language="en-gb" Text="Height"/></TextBlock>
+        <TextBlock x:Name="WidthText" HorizontalAlignment="Left" Margin="956,687,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="126"/>
+        <TextBlock x:Name="HeightText" HorizontalAlignment="Left" Margin="956,708,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="126"/>
         <TextBlock x:Name="ZoomVal" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Zoom" VerticalAlignment="Top"/>
 
-        <local:ZoomBorder MouseMove="Map_MouseMove" MouseLeave="Map_MouseLeave" MouseDown="Map_MouseDown" x:Name="_mapViewGrid" ClipToBounds="True" Background="Gray" Margin="64,18,0,0" Refresh="_mapViewGrid_Refresh" Move="_mapViewGrid_Move" Zoom="_mapViewGrid_Zoom" Height="720" VerticalAlignment="Top" HorizontalAlignment="Left" Width="825">
-            <Image HorizontalAlignment="Stretch" Width="NaN"/>
-        </local:ZoomBorder>
-        <TextBlock Name="MapX" HorizontalAlignment="Left" Margin="1140,606,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock Name="MapY" HorizontalAlignment="Left" Margin="1140,622,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock Name="MapLeft" HorizontalAlignment="Left" Margin="1140,656,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock Name="MapRight" HorizontalAlignment="Left" Margin="1140,672,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock Name="MapTop" HorizontalAlignment="Left" Margin="1140,688,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock Name="MapBottom" HorizontalAlignment="Left" Margin="1140,704,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock Name="MapWidth" HorizontalAlignment="Left" Margin="1208,606,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock Name="MapHeight" HorizontalAlignment="Left" Margin="1208,622,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
         <ListBox Name="listBoxZone" ItemsSource="{Binding _shapeEntities}" Background="Azure" Margin="914,76,10,334">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -64,14 +53,36 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Button Content="Export Full Map" HorizontalAlignment="Left" Height="26" Margin="1152,21,0,0" VerticalAlignment="Top" Width="157" Click="Button_MapExport">
+        <Button Content="Export Full Map" HorizontalAlignment="Left" Height="26" Margin="1058,21,0,0" VerticalAlignment="Top" Width="157" Click="Button_MapExport">
         </Button>
-        <TextBlock HorizontalAlignment="Left" Margin="1140,476,0,0" TextWrapping="Wrap" Text="Position X" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="1140,492,0,0" TextWrapping="Wrap" Text="Position Y" VerticalAlignment="Top"/>
-        <TextBlock x:Name="_pointPosX" HorizontalAlignment="Left" Margin="1197,476,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top"/>
-        <TextBlock x:Name="_pointPosY" HorizontalAlignment="Left" Margin="1197,492,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top"/>
-        <Popup Name="floatingTip" AllowsTransparency="True" Placement="Relative" PlacementTarget="{Binding ElementName=_mapViewGrid}">
+        <Popup Name="_detailToolTip" AllowsTransparency="True" Placement="Relative" PlacementTarget="{Binding ElementName=_mapViewGrid}">
             <TextBlock></TextBlock>
         </Popup>
+        <Popup Name="_overviewToolTip" AllowsTransparency="True" Placement="Relative" PlacementTarget="{Binding ElementName=_mapOverViewGrid}">
+            <TextBlock></TextBlock>
+        </Popup>
+        <ComboBox Name="_osMaps" HorizontalAlignment="Left" Height="25" Margin="916,462,0,0" VerticalAlignment="Top" Width="270"/>
+        <Button Content="Apply" HorizontalAlignment="Left" Height="26" Margin="1215,462,0,0" VerticalAlignment="Top" Width="157" Click="ApplyOverlay_Click"/>
+        <TextBlock HorizontalAlignment="Left" Margin="916,492,0,0" TextWrapping="Wrap" Text="Overlay Hits" VerticalAlignment="Top" Width="80"/>
+        <TextBlock Name="OverlayHitsText" HorizontalAlignment="Left" Margin="996,492,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="80"/>
+        <TabControl Name="_tabs" HorizontalAlignment="Left" Height="715" Margin="46,10,0,0" VerticalAlignment="Top" Width="828">
+            <TabItem Name="_tabDetail" Header="Detail">
+                <Grid Background="#FFE5E5E5">
+                    <local:ZoomBorder MouseMove="Map_MouseMove" MouseLeave="Map_MouseLeave" MouseDown="Map_MouseDown" x:Name="_mapViewGrid" ClipToBounds="True" Background="Gray"  Refresh="_mapViewGrid_Refresh" Move="_mapViewGrid_Move" Zoom="_mapViewGrid_Zoom">
+                        <Image HorizontalAlignment="Stretch" Width="NaN"/>
+                    </local:ZoomBorder>
+                </Grid>
+            </TabItem>
+            <TabItem Name="_tabOverview" Header="Overview" Selector.Selected="_tabOverview_Selected">
+                <Grid Background="#FFE5E5E5">
+                    <local:ZoomBorderOverview MouseMove="Overview_MouseMove"  MouseLeave="Overview_MouseLeave" MouseDown="Overview_MouseDown" MouseUp="Overview_MouseUp" x:Name="_mapOverViewGrid" ClipToBounds="True" Background="Gray">
+                        <Image HorizontalAlignment="Stretch" Width="NaN"/>
+                    </local:ZoomBorderOverview>
+
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <ComboBox Name="_osHits" HorizontalAlignment="Left" Height="25" Margin="916,513,0,0" VerticalAlignment="Top" Width="270"/>
+        <Button Content="Refresh Overview" HorizontalAlignment="Left" Height="26" Margin="1233,21,0,0" VerticalAlignment="Top" Width="157" Click="Button_RefreshOveriew"/>
     </Grid>
 </Window>

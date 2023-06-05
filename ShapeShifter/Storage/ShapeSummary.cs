@@ -24,7 +24,7 @@ namespace ShapeShifter.Storage
 
         public override string ToString()
         {
-            return FilePath;
+            return $"{Path.GetFileNameWithoutExtension(FileName)}";
         }
     }
 }
