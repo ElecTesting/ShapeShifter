@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Data.Common;
 using System.Net;
 using System.Drawing;
+using System.Reflection.PortableExecutable;
 
 namespace ShapeShifter
 {
@@ -569,6 +570,54 @@ namespace ShapeShifter
             return -1;
         }
 
+        public static ShapeFile GetSingleRecord(ShapeCache cache, int recordId)
+        {
+            var shapeFile = new ShapeFile();
+            var item = cache.Items.Where(i => i.RecordId == recordId).FirstOrDefault();
+            if (item == null)
+            {
+                return shapeFile;
+            }
+
+            using (var reader = new BinReader(new FileStream(cache.FilePath, FileMode.Open, FileAccess.Read)))
+            {
+                // move to the correct position in the shape binday file
+                reader.Goto(item.FileOffset);
+                var shapeType = (ShapeType)reader.ReadInt32();
+
+                switch (shapeType)
+                {
+                    // empty record
+                    case ShapeType.NullShape:
+                        break;
+                    case ShapeType.Point:
+                        var point = ReadPointRecord(reader);
+                        point.RecordId = item.RecordId;
+                        shapeFile.Points.Add(point);
+                        break;
+                    case ShapeType.PolyLine:
+                        var line = ReadPolyLine(reader);
+                        line.RecordId = item.RecordId;
+                        shapeFile.PolyLines.Add(line);
+                        break;
+                    case ShapeType.Polygon:
+                        var poly = ReadPolyGon(reader);
+                        poly.RecordId = item.RecordId;
+                        shapeFile.PolygonOverlays.Add(poly);
+                        break;
+                    case ShapeType.PolyLineZ:
+                        var polyLine = ReadPolyLineZ(reader);
+                        polyLine.RecordId = item.RecordId;
+                        shapeFile.PolyLines.Add(polyLine);
+                        break;
+                    default:
+                        break;
+                };
+            }
+
+            return shapeFile;
+        }
+
         /* CacheToShape
          * 
          * takes a pre-trimmed cache file and converts it to a shape file
@@ -618,6 +667,7 @@ namespace ShapeShifter
                                 break;
                             case ShapeType.Point:
                                 var point = ReadPointRecord(reader);
+                                point.RecordId = item.RecordId; 
                                 point.TextString = textString;
                                 point.Anchor = anchor;
                                 point.Color = item.FeatureColor;
@@ -626,6 +676,7 @@ namespace ShapeShifter
                                 break;
                             case ShapeType.PolyLine:
                                 var line = ReadPolyLine(reader);
+                                line.RecordId = item.RecordId;
                                 line.Color = item.FeatureColor;
                                 if (!string.IsNullOrEmpty(textString))
                                 {
@@ -637,6 +688,7 @@ namespace ShapeShifter
                                 break;
                             case ShapeType.Polygon:
                                 var poly = ReadPolyGon(reader);
+                                poly.RecordId = item.RecordId;
                                 poly.Color = item.FeatureColor;
                                 if (cache.Overlay)
                                 {
@@ -650,6 +702,7 @@ namespace ShapeShifter
                                 break;
                             case ShapeType.PolyLineZ:
                                 var polyLine = ReadPolyLineZ(reader);
+                                polyLine.RecordId = item.RecordId;
                                 polyLine.Color = item.FeatureColor;
                                 shapeFile.PolyLines.Add(polyLine);
                                 break;
@@ -660,5 +713,30 @@ namespace ShapeShifter
                 }
             }
         }
+
+        /* FileSlicer
+         * uses a cache object to slice up the original shape and dbf files
+         * into smaller files that only contain the features that are within
+         */
+        public static void FileSlicer(ShapeCache shapeCache, string outputPath)
+        {
+            var outputFile = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(shapeCache.FilePath) + ".shp");
+            var outputDbf = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(shapeCache.FilePath) + ".dbf");
+
+            using (var reader = new BinReader(new FileStream(shapeCache.FilePath, FileMode.Open, FileAccess.Read)))
+            {
+                using (var writer = new BinWriter(new FileStream(shapeCache.FilePath, FileMode.Create, FileAccess.Write)))
+                {
+                    // write header
+                    
+                    var newRecordId = 1;
+
+                    // loop
+                    // jump to record, modify record id, write record
+
+                    // fix header data length
+
+                }
+            }
     }
 }

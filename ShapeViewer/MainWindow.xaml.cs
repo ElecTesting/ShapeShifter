@@ -26,6 +26,7 @@ using System.Windows.Media.Media3D;
 using System.Drawing.Drawing2D;
 using System.Xml.Serialization;
 using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ShapeViewer
 {
@@ -125,6 +126,7 @@ namespace ShapeViewer
                     ZoomSlider.Value = 1;
                     _tabs.SelectedIndex = 0;
                     SetNewArea();
+                    _mapOverViewGrid.OffsetY = 0;
                     _mapOverViewGrid.Reset();
                 }
             }
@@ -201,10 +203,6 @@ namespace ShapeViewer
             ItemsArea.Text = itemCount.ToString();
             var areaOnly = _shapeManager.GetArea();
 
-            //ImageDump.Stretch = Stretch.Uniform;
-            //ImageDump.StretchDirection = StretchDirection.Both;
-
-            //var shapeTest = ShapeShifter.ShapeShifter.MergeAllShapeFiles(_folder);
             var width = (int)_mapViewGrid.RenderSize.Width;
             var height = (int)_mapViewGrid.RenderSize.Height;
             bool renderText = _metersPerPixel < 300 ? true : false;
@@ -301,45 +299,36 @@ namespace ShapeViewer
                 }
 
                 _mapOverViewGrid.Height = resultBitmap.Height;
-
+                _mapOverViewGrid.Reset();
             }
 
         }
 
         private Bitmap SetImageOpacity(Bitmap image, float opacity)
         {
-            try
+            //create a Bitmap the size of the image provided  
+            Bitmap bmp = new Bitmap(image.Width, image.Height);
+
+            //create a graphics object from the image  
+            using (Graphics gfx = Graphics.FromImage(bmp))
             {
-                //create a Bitmap the size of the image provided  
-                Bitmap bmp = new Bitmap(image.Width, image.Height);
 
-                //create a graphics object from the image  
-                using (Graphics gfx = Graphics.FromImage(bmp))
-                {
+                //create a color matrix object  
+                ColorMatrix matrix = new ColorMatrix();
 
-                    //create a color matrix object  
-                    ColorMatrix matrix = new ColorMatrix();
+                //set the opacity  
+                matrix.Matrix33 = opacity;
 
-                    //set the opacity  
-                    matrix.Matrix33 = opacity;
+                //create image attributes  
+                ImageAttributes attributes = new ImageAttributes();
 
-                    //create image attributes  
-                    ImageAttributes attributes = new ImageAttributes();
+                //set the color(opacity) of the image  
+                attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 
-                    //set the color(opacity) of the image  
-                    attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-
-                    //now draw the image  
-                    gfx.DrawImage(image, new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
-                }
-                return bmp;
+                //now draw the image  
+                gfx.DrawImage(image, new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
             }
-            catch (Exception ex)
-            {
-                //MessageBox.Show(ex.Message);
-                throw ex;
-                //return null;
-            }
+            return bmp;
         }
 
         private List<string> GetExclusionList()
@@ -519,7 +508,7 @@ namespace ShapeViewer
                 if (!_hideMouseTip)
                 {
                     var textBlock = (TextBlock)_detailToolTip.Child;
-                    textBlock.Text = $"X: {x:0} \nY: {y:0}";
+                    textBlock.Text = $" X: {x:0.00} \n Y: {y:0.00} ";
                 }
             }
         }
@@ -531,18 +520,11 @@ namespace ShapeViewer
 
             if (_shapeManager != null)
             {
-                // set box pan limits and sizes
-                var aspectY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
-
                 var mouseX = e.GetPosition((IInputElement)sender).X;
                 var mouseY = e.GetPosition((IInputElement)sender).Y;
 
-                var scrollDiff = _mapOverViewGrid.OffsetY;
-                var x = (mouseX / _overviewImage.Width) * _shapeManager.Width;
-                var y = (1 - ((mouseY - scrollDiff) / _overviewImage.Height)) * _shapeManager.Height;
-                
-                x = _shapeManager.Xmin + x;
-                y = _shapeManager.Ymax - y;
+                // get map position from control
+                var mapPos = OverviewToMapPos(sender, e);
 
                 if (!_overviewToolTip.IsOpen)
                 {
@@ -556,9 +538,33 @@ namespace ShapeViewer
                 if (!_hideMouseTip)
                 {
                     var textBlock = (TextBlock)_overviewToolTip.Child;
-                    textBlock.Text = $"X: {x:0} \nY: {y:0}";
+                    textBlock.Text = $" X: {mapPos.X:0.00} \n Y: {mapPos.Y:0.00} ";
                 }
             }
+        }
+
+        /* Uses a mouse event to get the map position from the overview control 
+         */
+        private ShapePoint OverviewToMapPos(object sender, MouseEventArgs e)
+        {
+            // set box pan limits and sizes
+            var aspectY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
+
+            var mouseX = e.GetPosition((IInputElement)sender).X;
+            var mouseY = e.GetPosition((IInputElement)sender).Y;
+
+            var scrollDiff = _mapOverViewGrid.OffsetY;
+            var x = (mouseX / _overviewImage.Width) * _shapeManager.Width;
+            var y = ((mouseY - scrollDiff) / _overviewImage.Height) * _shapeManager.Height;
+
+            x = _shapeManager.Xmin + x;
+            y = _shapeManager.Ymax - y;
+
+            return new ShapePoint()
+            {
+                X = x,
+                Y = y   
+            };
         }
 
         private void Overview_MouseLeave(object sender, MouseEventArgs e)
@@ -578,15 +584,72 @@ namespace ShapeViewer
 
         private void Overview_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                _hideMouseTip = true;
+                var mapPos = OverviewToMapPos(sender, e);
+                FindPointInOverlay(mapPos);
             }
-            
-            if (e.RightButton == MouseButtonState.Pressed)
+            else
             {
-                OverviewToDetail(sender, e);
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    _hideMouseTip = true;
+                }
+
+                if (e.RightButton == MouseButtonState.Pressed)
+                {
+                    OverviewToDetail(sender, e);
+                }
             }
+        }
+
+        private void FindPointInOverlay(ShapePoint point)
+        {
+            if (_shapeManager.OverlayCache.Items.Count == 0)
+                return;
+
+            // convert the point into a box
+            var box = new BoundingBox()
+            {
+                Xmax = point.X,
+                Xmin = point.X,
+                Ymax = point.Y,
+                Ymin = point.Y
+            };
+
+            var records = new List<ShapeCacheItem>();
+
+            var overlays = _shapeManager.GetOverlayHits();
+
+            //check if it intersects with any of the overlay boxes
+            foreach (var item in _shapeManager.OverlayCache.Items)
+            {
+                if (item.Box.Intersects(box))
+                {
+                    var shapeRecord = ShapeShifter.ShapeShifter.GetSingleRecord(_shapeManager.OverlayCache, item.RecordId);
+                    foreach (var poly in shapeRecord.PolygonOverlays)
+                    {
+                        foreach (var basePoly in poly.Polygons)
+                        {
+                            if (basePoly.PointInPoly(point))
+                            {
+                                var thisOverlay = overlays.Where(x => x.RecordId == item.RecordId).FirstOrDefault();
+                                foreach (ShapeRegion comboItem in _osHits.Items)
+                                {
+                                    if (thisOverlay.RecordId == comboItem.RecordId)
+                                    {
+                                        _osHits.SelectedItem = comboItem;
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // if we get here, we didn't find a hit
+            _osHits.SelectedItem = null;
         }
 
         private void OverviewToDetail(object sender, MouseButtonEventArgs e)
@@ -617,6 +680,12 @@ namespace ShapeViewer
 
         private void ApplyOverlay_Click(object sender, RoutedEventArgs e)
         {
+            if (_osMaps.SelectedIndex == -1)
+                return;
+
+            if (_shapeManager == null)
+                return; 
+
             ApplyOverlay();
         }
 
@@ -642,7 +711,7 @@ namespace ShapeViewer
 
         }
 
-        private void GetOverlayImage()
+        private void GetOverlayImage(int recordId = -1)
         {
             if (_shapeManager == null)
             {
@@ -663,7 +732,22 @@ namespace ShapeViewer
             };
 
             var tempList = new List<ShapeCache>();
-            tempList.Add(_shapeManager.OverlayCache);
+
+            if (recordId == -1)
+            {
+                tempList.Add(_shapeManager.OverlayCache);
+            }
+            else
+            {
+                var temp = new ShapeCache();
+                temp.FilePath = _shapeManager.OverlayCache.FilePath;
+                temp.DbfPath =  _shapeManager.OverlayCache.DbfPath;
+                temp.BoundingBox = _shapeManager.OverlayCache.BoundingBox;
+                temp.Overlay = _shapeManager.OverlayCache.Overlay;
+                temp.Items.Add(_shapeManager.OverlayCache.Items.Where(x => x.RecordId == recordId).FirstOrDefault());
+                tempList.Add(temp);
+            }
+
 
             var overlayShape = ShapeShifter.ShapeShifter.CreateShapeFileFromCache(tempList, box);
 
@@ -682,9 +766,33 @@ namespace ShapeViewer
             SetOverview();
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
 
+        private void CutRegion_Click(object sender, RoutedEventArgs e)
+        {
+            if (_osHits.SelectedItem == null)
+            {
+                return;
+            }
+
+            CutRegion();
+        }
+
+        private void CutRegion()
+        {
+            // get the selected region record
+            var region = (ShapeRegion)_osHits.SelectedItem;
+            var cutList = _shapeManager.CutRegion(region, GetExclusionList());
+            if (cutList.Count == 0)
+            {
+                return;
+            }
+
+            var tempPath = @"D:\temp\dump\";
+            // no we need to build a new set of files in a folder...
+            foreach (var cache in cutList)
+            {
+                ShapeShifter.ShapeShifter.FileSlicer(cache, tempPath);
+            }
         }
 
         private void Button_RefreshOveriew(object sender, RoutedEventArgs e)
@@ -701,6 +809,17 @@ namespace ShapeViewer
         private void Overview_MouseUp(object sender, MouseButtonEventArgs e)
         {
             _hideMouseTip = false;
+        }
+
+        private void _osHits_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var combo = (System.Windows.Controls.ComboBox)sender;
+            if (combo.SelectedItem != null)
+            {
+                var item = (ShapeRegion)combo.SelectedItem;
+                GetOverlayImage(item.RecordId);
+                CompositeOverview();
+            }
         }
     }
 }

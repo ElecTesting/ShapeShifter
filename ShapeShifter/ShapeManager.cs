@@ -69,6 +69,65 @@ namespace ShapeShifter
             Height = Ymax - Ymin;
         }
 
+        /* cut region
+         * takes a shape region
+         * grabs items within the bounding box
+         * then checks if the intersect with the regions polygon
+         */
+        public List<ShapeCache> CutRegion(ShapeRegion region, List<string> exclusions)
+        {
+            var cutCache = new List<ShapeCache>();  
+
+            // get the poly from the shape data
+            var shapeRecord = ShapeShifter.GetSingleRecord(OverlayCache, region.RecordId);
+            var regionPoly = shapeRecord.PolygonOverlays[0].Polygons[0];
+
+            // set the area to the bounding box of the region polygon
+            var boxCount = SetArea(region.Box, exclusions);
+            var areaList = GetAreaList();
+
+            foreach (var shapeFile in areaList)
+            {
+                shapeFile.CutRegion(regionPoly);
+                if (shapeFile.CutRecords.Count > 0)
+                {
+                    cutCache.Add(CutShapeToCache(shapeFile));
+                }
+            }
+
+            return cutCache;
+        }
+
+        /* takes the region cut shape file and outputs a cache file
+         */
+        private ShapeCache CutShapeToCache(ShapeFile shapeFile)
+        {
+            var cache = new ShapeCache()
+            {
+                FilePath = shapeFile.FilePath,
+                Overlay = false
+            };
+
+            var box = new BoundingBox();
+
+            var sourceCache = _cache.Where(x => x.FilePath == shapeFile.FilePath).First();
+
+            foreach (var recordId in shapeFile.CutRecords)
+            {
+                cache.Items.Add(sourceCache.Items.Where(x => x.RecordId == recordId).First());
+            }
+
+            cache.BoundingBox = new BoundingBoxHeader()
+            {
+                Xmin = cache.Items.Min(x => x.Box.Xmin),
+                Xmax = cache.Items.Max(x => x.Box.Xmax),
+                Ymin = cache.Items.Min(x => x.Box.Ymin),
+                Ymax = cache.Items.Max(x => x.Box.Ymax)
+            };
+
+            return cache;
+        }
+
         /* sets the area required from the cache files 
          */
         public int SetArea(BoundingBox area)
@@ -129,6 +188,35 @@ namespace ShapeShifter
             return ShapeShifter.CreateShapeFileFromCache(_area, _areaBox);
         }
 
+        /* GetArea
+         * returns a shape object containing the area set by SetArea
+        */
+        public List<ShapeFile> GetAreaList()
+        {
+            var shapeFiles = new List<ShapeFile>();
+
+            if (_area.Count() == 0)
+            {
+                return shapeFiles;
+            }
+
+            foreach (var cache in _cache)
+            {
+                var shapeFile = new ShapeFile()
+                {
+                    FilePath = cache.FilePath
+                };
+
+                ShapeShifter.CacheToShape(cache, shapeFile);
+                if (shapeFile.TotalObjects > 0)
+                {
+                    shapeFiles.Add(shapeFile);
+                }
+            }
+
+            return shapeFiles;
+        }
+
         /* CrossRef
          * takes a cache file and intersetcs it with the total area of the current map
          */
@@ -165,18 +253,34 @@ namespace ShapeShifter
             //_cache.Add(OverlayCache);
         }
 
-        public List<string> GetOverlayHits()
+        public List<ShapeRegion> GetOverlayHits()
         {
-            var overlayHits = new List<string>();
+            var overlayHits = new List<ShapeRegion>();
 
             if (OverlayCache != null)
             {
                 using (var dbf = new DBaseReader.DBaseReader(OverlayCache.DbfPath))
                 {
+                    var nameOrdinal = dbf.GetOrdinal("NAME");
+
                     foreach (var item in OverlayCache.Items)
                     {
-                        dbf.GotoRow(item.RecordId);
-                        overlayHits.Add(dbf.GetString("NAME"));
+                        var name = "DBase field name not found";
+
+                        if (nameOrdinal > -1)
+                        {
+                            dbf.GotoRow(item.RecordId - 1);
+                            name = dbf.GetString("NAME");
+                        }
+
+                        var hit = new ShapeRegion()
+                        {
+                            Name = name,
+                            RecordId = item.RecordId,
+                            Box = item.Box
+                        };
+
+                        overlayHits.Add(hit);
                     }
                 }
             }

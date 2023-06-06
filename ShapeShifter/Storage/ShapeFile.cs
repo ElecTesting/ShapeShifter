@@ -31,6 +31,88 @@ namespace ShapeShifter.Storage
         public List<ShapePolygon> Polygons { get; set; } = new List<ShapePolygon>();
         public List<ShapePolygon> PolygonOverlays { get; set; } = new List<ShapePolygon>();
 
-        public List<ShapeObject> Objects { get; set; } = new List<ShapeObject>();
+        public List<int> CutRecords { get; set; } = new List<int>();
+
+
+        public int TotalObjects
+        {
+            get
+            {
+                return Points.Count + MultiPoints.Count + PolyLines.Count + Polygons.Count;
+            }
+        }
+
+        public void CutRegion(BasePoloygon regionPoly)
+        {
+            CutRecords = new List<int>();
+
+            CutPoints(regionPoly);
+            CutMultiPoints(regionPoly);
+            CutPolygons(regionPoly);
+            CutPolyLines(regionPoly);
+        }
+
+        private void CutPoints(BasePoloygon regionPoly)
+        {
+            foreach (var point in Points)
+            {
+                if (regionPoly.PointInPoly(point))
+                {
+                    CutRecords.Add(point.RecordId);
+                }
+            }
+        }
+
+        private void CutMultiPoints(BasePoloygon regionPoly)
+        {
+            foreach (var multiPoint in MultiPoints)
+            {
+                foreach (var point in multiPoint.Points)
+                {
+                    if (regionPoly.PointInPoly(point))
+                    {
+                        CutRecords.Add(multiPoint.RecordId);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void CutPolygons(BasePoloygon regionPoly)
+        {
+            foreach (var polygon in Polygons)
+            {
+                foreach (var poly in polygon.Polygons)
+                {
+                    foreach (var point in poly.Points)
+                    {
+                        if (regionPoly.PointInPoly(point))
+                        {
+                            CutRecords.Add(polygon.RecordId);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CutPolyLines(BasePoloygon regionPoly)
+        {
+            foreach (var polyLine in PolyLines)
+            {
+                foreach (var poly in polyLine.PolyLines)
+                {
+                    foreach (var point in poly.Points)
+                    {
+                        if (regionPoly.PointInPoly(point))
+                        {
+                            CutRecords.Add(polyLine.RecordId);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShapeViewer"
         mc:Ignorable="d"
-        Title="Shape Shifter" Height="800" Width="1400">
+        Title="Shape Shifter" Height="800" Width="1430">
     <Grid Name="GridControls" Margin="0,0,0,0">
         <Slider Name="ZoomSlider" HorizontalAlignment="Left" Height="17" Margin="-123,174,0,0" VerticalAlignment="Top" Width="296" RenderTransformOrigin="0.5,0.5" ValueChanged="ZoomSlider_ValueChanged" Minimum="0" Maximum="1">
             <Slider.RenderTransform>
@@ -46,7 +46,7 @@
         <TextBlock x:Name="HeightText" HorizontalAlignment="Left" Margin="956,708,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top" Width="126"/>
         <TextBlock x:Name="ZoomVal" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Zoom" VerticalAlignment="Top"/>
 
-        <ListBox Name="listBoxZone" ItemsSource="{Binding _shapeEntities}" Background="Azure" Margin="914,76,10,334">
+        <ListBox Name="listBoxZone" ItemsSource="{Binding _shapeEntities}" Background="Azure" Margin="909,64,0,0" HorizontalAlignment="Left" Width="481" Height="362" VerticalAlignment="Top">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Display}" Checked="ShapeItem_CheckChange" Unchecked="ShapeItem_CheckChange"/>
@@ -55,11 +55,11 @@
         </ListBox>
         <Button Content="Export Full Map" HorizontalAlignment="Left" Height="26" Margin="1058,21,0,0" VerticalAlignment="Top" Width="157" Click="Button_MapExport">
         </Button>
-        <Popup Name="_detailToolTip" AllowsTransparency="True" Placement="Relative" PlacementTarget="{Binding ElementName=_mapViewGrid}">
-            <TextBlock></TextBlock>
+        <Popup Name="_detailToolTip" AllowsTransparency="False"  Placement="Relative" PlacementTarget="{Binding ElementName=_mapViewGrid}">
+            <TextBlock Background="Aqua" FontSize="14"></TextBlock>
         </Popup>
-        <Popup Name="_overviewToolTip" AllowsTransparency="True" Placement="Relative" PlacementTarget="{Binding ElementName=_mapOverViewGrid}">
-            <TextBlock></TextBlock>
+        <Popup Name="_overviewToolTip"  AllowsTransparency="False" Placement="Relative" PlacementTarget="{Binding ElementName=_mapOverViewGrid}">
+            <TextBlock Background="Aqua" FontSize="14"></TextBlock>
         </Popup>
         <ComboBox Name="_osMaps" HorizontalAlignment="Left" Height="25" Margin="916,462,0,0" VerticalAlignment="Top" Width="270"/>
         <Button Content="Apply" HorizontalAlignment="Left" Height="26" Margin="1215,462,0,0" VerticalAlignment="Top" Width="157" Click="ApplyOverlay_Click"/>
@@ -82,7 +82,8 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <ComboBox Name="_osHits" HorizontalAlignment="Left" Height="25" Margin="916,513,0,0" VerticalAlignment="Top" Width="270"/>
+        <ComboBox Name="_osHits" SelectionChanged="_osHits_SelectionChanged" HorizontalAlignment="Left" Height="25" Margin="916,513,0,0" VerticalAlignment="Top" Width="270"/>
         <Button Content="Refresh Overview" HorizontalAlignment="Left" Height="26" Margin="1233,21,0,0" VerticalAlignment="Top" Width="157" Click="Button_RefreshOveriew"/>
+        <Button Content="Cut Region" HorizontalAlignment="Left" Height="26" Margin="1215,513,0,0" VerticalAlignment="Top" Width="157" Click="CutRegion_Click"/>
     </Grid>
 </Window>

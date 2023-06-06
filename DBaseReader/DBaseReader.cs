@@ -211,7 +211,8 @@ namespace DBaseReader
             var field = Columns.Where(f => f.Name == name).FirstOrDefault();
             if (field == null)
             {
-                throw new Exception($"Field {name} not found");
+                return -1;
+                //throw new Exception($"Field {name} not found");
             }
             return Columns.IndexOf(field);
         }

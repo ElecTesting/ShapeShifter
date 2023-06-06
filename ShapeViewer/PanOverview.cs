@@ -23,7 +23,7 @@ namespace ShapeViewer
         //public double BoxX { get; set; }
         //public double BoxY { get; set; }
 
-        public double OffsetY { get; set; }
+        public double OffsetY { get; set; } = 0;
 
         private UIElement _child = null;
         private Point _origin;
@@ -88,8 +88,7 @@ namespace ShapeViewer
                 this.MouseLeftButtonDown += child_MouseLeftButtonDown;
                 this.MouseLeftButtonUp += child_MouseLeftButtonUp;
                 this.MouseMove += child_MouseMove;
-                this.PreviewMouseRightButtonDown += new MouseButtonEventHandler(
-                  child_PreviewMouseRightButtonDown);
+                //this.PreviewMouseRightButtonDown += new MouseButtonEventHandler(child_PreviewMouseRightButtonDown);
             }
         }
 
@@ -105,7 +104,7 @@ namespace ShapeViewer
                 // reset pan
                 var tt = GetTranslateTransform(_child);
                 tt.X = 0.0;
-                tt.Y = 0.0;
+                tt.Y = OffsetY;
             }
         }
 
@@ -113,13 +112,16 @@ namespace ShapeViewer
 
         private void child_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (_child != null)
+            if (Keyboard.Modifiers != ModifierKeys.Control)
             {
-                var tt = GetTranslateTransform(_child);
-                _start = e.GetPosition(this);
-                _origin = new Point(0, tt.Y);
-                this.Cursor = Cursors.Hand;
-                _child.CaptureMouse();
+                if (_child != null)
+                {
+                    var tt = GetTranslateTransform(_child);
+                    _start = e.GetPosition(this);
+                    _origin = new Point(0, tt.Y);
+                    this.Cursor = Cursors.Hand;
+                    _child.CaptureMouse();
+                }
             }
         }
 
@@ -132,10 +134,10 @@ namespace ShapeViewer
             }
         }
 
-        void child_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            this.Reset();
-        }
+        //void child_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        //{
+        //    this.Reset();
+        //}
 
         private void child_MouseMove(object sender, MouseEventArgs e)
         {
