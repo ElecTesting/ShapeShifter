@@ -793,6 +793,7 @@ namespace ShapeViewer
             {
                 ShapeShifter.ShapeShifter.FileSlicer(cache, tempPath);
             }
+            MessageBox.Show("DONE!");
         }
 
         private void Button_RefreshOveriew(object sender, RoutedEventArgs e)

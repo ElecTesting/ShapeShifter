@@ -484,11 +484,9 @@ namespace ShapeShifter
             };
         }
 
-        /* Merge shape files
+        /* Convert bounding box
          * 
-         * source = data to be copied from
-         * dest = destination to push data into
-         * 
+         * this should be replaced with a standard class for both
          */
         private static void BoundingBoxMinMax(BoundingBoxHeader source, BoundingBoxHeader dest)
         {
@@ -714,29 +712,123 @@ namespace ShapeShifter
             }
         }
 
+        private const long SHAPEFILE_HEADER_LENGTH = 100;
+        private const long SHAPEFILE_FILELENGTH = 24;
+        private const long SHAPEFILE_BOX = 36;
+
+        private const long DBF_HEADER_LENGTH = 32;
+        private const long DBF_RECORD_COUNT = 4;
+        private const long DBF_RECORD_SIZE = 10;
+        private const long DBF_RECORD_DESC_SIZE = 32;
+
         /* FileSlicer
          * uses a cache object to slice up the original shape and dbf files
          * into smaller files that only contain the features that are within
          */
         public static void FileSlicer(ShapeCache shapeCache, string outputPath)
         {
-            var outputFile = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(shapeCache.FilePath) + ".shp");
-            var outputDbf = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(shapeCache.FilePath) + ".dbf");
+            // new file names
+            var shapeOutput = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(shapeCache.FilePath) + ".shp");
+            var dbfOutput = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(shapeCache.FilePath) + ".dbf");
 
+            // first do the shape file
             using (var reader = new BinReader(new FileStream(shapeCache.FilePath, FileMode.Open, FileAccess.Read)))
             {
-                using (var writer = new BinWriter(new FileStream(shapeCache.FilePath, FileMode.Create, FileAccess.Write)))
+                using (var writer = new BinWriter(new FileStream(shapeOutput, FileMode.Create, FileAccess.Write)))
                 {
                     // write header
-                    
+                    writer.Write(reader.ReadBytes((int)SHAPEFILE_HEADER_LENGTH));
+
                     var newRecordId = 1;
 
                     // loop
                     // jump to record, modify record id, write record
+                    foreach (var item in shapeCache.Items)
+                    {
+                        // the offest in the cache is after the record id and record length
+                        // we have a new recordid so we only need to get the length
+                        reader.Goto(item.FileOffset - 4); 
+
+                        writer.WriteBE(newRecordId);
+                        
+                        var recordLength = reader.ReadInt32BE();
+                        writer.WriteBE(recordLength);
+                        writer.Write(reader.ReadBytes(recordLength * 2));
+                        newRecordId++;
+                    }
 
                     // fix header data length
+                    var totalLength = writer.Position;
 
+                    // set file length
+                    writer.Goto(SHAPEFILE_FILELENGTH);
+                    var newLength = (int)totalLength / 2;
+                    writer.WriteBE(newLength);
+
+                    writer.Goto(SHAPEFILE_BOX);
+                    writer.Write(shapeCache.BoundingBox.Xmin);
+                    writer.Write(shapeCache.BoundingBox.Ymin);
+                    writer.Write(shapeCache.BoundingBox.Xmax);
+                    writer.Write(shapeCache.BoundingBox.Ymax);
                 }
             }
+
+            // now do the dbf file
+            // first do the shape file
+            using (var reader = new BinReader(new FileStream(shapeCache.DbfPath, FileMode.Open, FileAccess.Read)))
+            {
+                using (var writer = new BinWriter(new FileStream(dbfOutput, FileMode.Create, FileAccess.Write)))
+                {
+                    long dataStart = 0;
+
+                    // get size of record
+                    reader.Goto(DBF_RECORD_SIZE);
+                    var recordSize = reader.ReadInt16();
+
+                    // write header
+                    reader.Goto(0);
+                    writer.Write(reader.ReadBytes((int)DBF_HEADER_LENGTH));
+
+                    // copy field descriptors
+                    while (true)
+                    {
+                        var fieldDesc = reader.ReadBytes((int)DBF_RECORD_DESC_SIZE);
+
+                        if (fieldDesc[0] == 0x0D)
+                        {
+                            // end of field descriptors
+                            writer.Write(fieldDesc[0]);
+                            
+                            // move to start of data
+                            reader.Move(-DBF_RECORD_DESC_SIZE + 1);
+                            dataStart = reader.Position;
+                            break;
+                        }
+                        else
+                        {
+                            writer.Write(fieldDesc);
+                        }
+                    }
+
+                    // now copy the records
+                    foreach (var item in shapeCache.Items)
+                    {
+                        // the offest in the cache is after the record id and record length
+                        // we have a new recordid so we only need to get the length
+                        var recordId = item.RecordId - 1;
+                        var recordOffset = dataStart + (recordId * recordSize);
+                        reader.Goto(recordOffset);
+                        writer.Write(reader.ReadBytes(recordSize));
+                    }
+
+                    // end of file marker
+                    writer.Write((byte)0x1A);
+
+                    // fix record count
+                    writer.Goto(DBF_RECORD_COUNT);
+                    writer.Write(shapeCache.Items.Count);
+                }
+            }
+        }
     }
 }

@@ -54,27 +54,41 @@ namespace ShapeShifter.Storage
 
         private void CutPoints(BasePoloygon regionPoly)
         {
-            foreach (var point in Points)
+            Parallel.ForEach(Points, point =>
             {
                 if (regionPoly.PointInPoly(point))
                 {
                     CutRecords.Add(point.RecordId);
                 }
-            }
+            }); 
+            //foreach (var point in Points)
+            //{
+            //    if (regionPoly.PointInPoly(point))
+            //    {
+            //        CutRecords.Add(point.RecordId);
+            //    }
+            //}
         }
 
         private void CutMultiPoints(BasePoloygon regionPoly)
         {
             foreach (var multiPoint in MultiPoints)
             {
-                foreach (var point in multiPoint.Points)
+                Parallel.ForEach(multiPoint.Points, point =>
                 {
                     if (regionPoly.PointInPoly(point))
                     {
                         CutRecords.Add(multiPoint.RecordId);
-                        break;
                     }
-                }
+                });
+                //foreach (var point in multiPoint.Points)
+                //{
+                //    if (regionPoly.PointInPoly(point))
+                //    {
+                //        CutRecords.Add(multiPoint.RecordId);
+                //        break;
+                //    }
+                //}
             }
         }
 
@@ -84,14 +98,21 @@ namespace ShapeShifter.Storage
             {
                 foreach (var poly in polygon.Polygons)
                 {
-                    foreach (var point in poly.Points)
+                    Parallel.ForEach(poly.Points, point =>
                     {
                         if (regionPoly.PointInPoly(point))
                         {
                             CutRecords.Add(polygon.RecordId);
-                            break;
                         }
-                    }
+                    });
+                    //foreach (var point in poly.Points)
+                    //{
+                    //    if (regionPoly.PointInPoly(point))
+                    //    {
+                    //        CutRecords.Add(polygon.RecordId);
+                    //        break;
+                    //    }
+                    //}
                 }
             }
         }
@@ -102,14 +123,21 @@ namespace ShapeShifter.Storage
             {
                 foreach (var poly in polyLine.PolyLines)
                 {
-                    foreach (var point in poly.Points)
+                    Parallel.ForEach(poly.Points, point =>
                     {
                         if (regionPoly.PointInPoly(point))
                         {
                             CutRecords.Add(polyLine.RecordId);
-                            break;
                         }
-                    }
+                    });
+                    //foreach (var point in poly.Points)
+                    //{
+                    //    if (regionPoly.PointInPoly(point))
+                    //    {
+                    //        CutRecords.Add(polyLine.RecordId);
+                    //        break;
+                    //    }
+                    //}
                 }
             }
         }

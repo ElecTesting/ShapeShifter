@@ -84,16 +84,25 @@ namespace ShapeShifter
 
             // set the area to the bounding box of the region polygon
             var boxCount = SetArea(region.Box, exclusions);
-            var areaList = GetAreaList();
+            var areaList = GetAreaList(exclusions);
 
-            foreach (var shapeFile in areaList)
+            Parallel.ForEach(areaList, shapeFile =>
             {
                 shapeFile.CutRegion(regionPoly);
                 if (shapeFile.CutRecords.Count > 0)
                 {
                     cutCache.Add(CutShapeToCache(shapeFile));
                 }
-            }
+            });
+
+            //foreach (var shapeFile in areaList)
+            //{
+            //    shapeFile.CutRegion(regionPoly);
+            //    if (shapeFile.CutRecords.Count > 0)
+            //    {
+            //        cutCache.Add(CutShapeToCache(shapeFile));
+            //    }
+            //}
 
             return cutCache;
         }
@@ -105,6 +114,7 @@ namespace ShapeShifter
             var cache = new ShapeCache()
             {
                 FilePath = shapeFile.FilePath,
+                DbfPath = Path.ChangeExtension(shapeFile.FilePath, ".dbf"),
                 Overlay = false
             };
 
@@ -112,10 +122,25 @@ namespace ShapeShifter
 
             var sourceCache = _cache.Where(x => x.FilePath == shapeFile.FilePath).First();
 
-            foreach (var recordId in shapeFile.CutRecords)
-            {
-                cache.Items.Add(sourceCache.Items.Where(x => x.RecordId == recordId).First());
-            }
+            Parallel.ForEach(sourceCache.Items, item =>
+                {
+                if (shapeFile.CutRecords.Contains(item.RecordId))
+                {
+                    cache.Items.Add(item);
+                }
+            });
+            //foreach (var item in sourceCache.Items)
+            //{
+            //    if (shapeFile.CutRecords.Contains(item.RecordId))
+            //    {
+            //        cache.Items.Add(item);
+            //    }
+            //}
+
+            //foreach (var recordId in shapeFile.CutRecords)
+            //{
+            //    cache.Items.Add(sourceCache.Items.Where(x => x.RecordId == recordId).First());
+            //}
 
             cache.BoundingBox = new BoundingBoxHeader()
             {
@@ -191,7 +216,7 @@ namespace ShapeShifter
         /* GetArea
          * returns a shape object containing the area set by SetArea
         */
-        public List<ShapeFile> GetAreaList()
+        public List<ShapeFile> GetAreaList(List<string> exclusions)
         {
             var shapeFiles = new List<ShapeFile>();
 
@@ -202,6 +227,12 @@ namespace ShapeShifter
 
             foreach (var cache in _cache)
             {
+                // if the file exists in the exclusion list then skip it
+                if (exclusions.Contains(cache.FilePath))
+                {
+                    continue;
+                }
+
                 var shapeFile = new ShapeFile()
                 {
                     FilePath = cache.FilePath
