@@ -87,6 +87,6 @@
         <Button Content="Cut Region" HorizontalAlignment="Left" Height="26" Margin="1200,519,0,0" VerticalAlignment="Top" Width="95" Click="CutRegion_Click"/>
         <Button Content="Cut All Box" HorizontalAlignment="Left" Height="26" Margin="1300,481,0,0" VerticalAlignment="Top" Width="90" Click="QuickCut_Click" RenderTransformOrigin="0.595,3.54"/>
         <Button Content="Cut Box" HorizontalAlignment="Left" Height="26" Margin="1300,520,0,0" VerticalAlignment="Top" Width="90" Click="CutBox_Click"/>
-        <Button Content="Cut All Region" HorizontalAlignment="Left" Height="26" Margin="1200,481,0,0" VerticalAlignment="Top" Width="90" Click="CutRegionAll_Click" RenderTransformOrigin="0.595,3.54"/>
+        <Button Content="Cut All Region" HorizontalAlignment="Left" Height="26" Margin="1200,481,0,0" VerticalAlignment="Top" Width="95" Click="CutRegionAll_Click" RenderTransformOrigin="0.595,3.54"/>
     </Grid>
 </Window>
