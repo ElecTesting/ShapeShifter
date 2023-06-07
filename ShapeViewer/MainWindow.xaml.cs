@@ -50,6 +50,7 @@ namespace ShapeViewer
 
         private string _shapeFolder = "";
         private string _exportFolder = "";
+        private string _cutFolder = "";
 
         public ObservableCollection<ShapeSummary> _shapeEntities { get; set; } = new ObservableCollection<ShapeSummary>();
 
@@ -777,23 +778,216 @@ namespace ShapeViewer
             CutRegion();
         }
 
+
+        private void CutRegionAll_Click(object sender, RoutedEventArgs e)
+        {
+            CutRegionAll();
+        }
+
+        private void CutBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (_osHits.SelectedItem == null)
+            {
+                return;
+            }
+
+            CutBox();
+        }
+
+        private void CutRegionAll()
+        {
+            var openFolder = new FolderBrowserDialog()
+            {
+                Title = "Select a folder destination for cut ESRI folders",
+                AllowMultiSelect = false
+            };
+
+            if (!string.IsNullOrEmpty(_cutFolder))
+            {
+                openFolder.InitialFolder = _cutFolder;
+            }
+
+            var result = openFolder.ShowDialog();
+
+            if (result == System.Windows.Forms.DialogResult.Cancel)
+            {
+                return;
+            }
+
+            var baseFolder = openFolder.SelectedFolder;
+
+            foreach (ShapeRegion region in _osHits.Items)
+            {
+                var thisFolder = System.IO.Path.Combine(baseFolder, region.Name);
+
+                if (!Directory.Exists(thisFolder))
+                {
+                    Directory.CreateDirectory(thisFolder);
+                }
+
+                // get the selected region record
+                var cutList = _shapeManager.CutRegion(region, GetExclusionList());
+
+                // no we need to build a new set of files in a folder...
+                foreach (var cache in cutList)
+                {
+                    ShapeShifter.ShapeShifter.FileSlicer(cache, thisFolder);
+                }
+            }
+
+            MessageBox.Show("Done");
+        }
+
+        private void CutBox()
+        {
+            var openFolder = new FolderBrowserDialog()
+            {
+                Title = "Select a folder destination for cut ESRI files",
+                AllowMultiSelect = false
+            };
+
+            if (!string.IsNullOrEmpty(_cutFolder))
+            {
+                openFolder.InitialFolder = _cutFolder;
+            }
+
+            var result = openFolder.ShowDialog();
+
+            if (result == System.Windows.Forms.DialogResult.Cancel)
+            {
+                return;
+            }
+
+            var fileList = Directory.GetFiles(openFolder.SelectedFolder, "*.shp");
+            if (fileList.Length > 0)
+            {
+                var youSure = MessageBox.Show("Files exist in this folder, continue?", "Are you sure?", MessageBoxButton.OKCancel);
+                if (youSure == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+            }
+
+            // get the selected region record
+            var region = (ShapeRegion)_osHits.SelectedItem;
+
+            var cutList = _shapeManager.GetCacheArea(region.Box, GetExclusionList());
+            if (cutList.Count > 0)
+            {
+                var thisFolder = System.IO.Path.Combine(openFolder.SelectedFolder, region.Name);
+
+                if (!Directory.Exists(thisFolder))
+                {
+                    Directory.CreateDirectory(thisFolder);
+                }
+
+                // no we need to build a new set of files in a folder...
+                foreach (var cache in cutList)
+                {
+                    ShapeShifter.ShapeShifter.FileSlicer(cache, thisFolder);
+                }
+            }
+            MessageBox.Show("Done");
+        }
+
+        private void QuickCut_Click(object sender, RoutedEventArgs e)
+        {
+            QuickCut();
+        }
+
+
+
+        private void QuickCut()
+        {
+            var openFolder = new FolderBrowserDialog()
+            {
+                Title = "Select a folder destination for cut ESRI folders",
+                AllowMultiSelect = false
+            };
+
+            if (!string.IsNullOrEmpty(_cutFolder))
+            {
+                openFolder.InitialFolder = _cutFolder;
+            }
+
+            var result = openFolder.ShowDialog();
+
+            if (result == System.Windows.Forms.DialogResult.Cancel)
+            {
+                return;
+            }
+
+            var baseFolder = openFolder.SelectedFolder;
+
+            foreach (ShapeRegion region in _osHits.Items)
+            {
+                var cutList = _shapeManager.GetCacheArea(region.Box, GetExclusionList());
+                if (cutList.Count > 0)
+                {
+                    var thisFolder = System.IO.Path.Combine(baseFolder, region.Name);
+
+                    if (!Directory.Exists(thisFolder))
+                    {
+                        Directory.CreateDirectory(thisFolder);
+                    }
+
+                    // no we need to build a new set of files in a folder...
+                    foreach (var cache in cutList)
+                    {
+                        ShapeShifter.ShapeShifter.FileSlicer(cache, thisFolder);
+                    }
+                }
+            }
+
+            MessageBox.Show("Done");
+        }
+
         private void CutRegion()
         {
+            var openFolder = new FolderBrowserDialog()
+            {
+                Title = "Select a folder destination for cut ESRI files",
+                AllowMultiSelect = false
+            };
+
+            if (!string.IsNullOrEmpty(_cutFolder))
+            {
+                openFolder.InitialFolder = _cutFolder;
+            }
+
+            var result = openFolder.ShowDialog();
+
+            if (result == System.Windows.Forms.DialogResult.Cancel)
+            {
+                return;
+            }
+
+            var fileList = Directory.GetFiles(openFolder.SelectedFolder, "*.shp");
+            if (fileList.Length > 0)
+            {
+                var youSure = MessageBox.Show("Files exist in this folder, continue?", "Are you sure?", MessageBoxButton.OKCancel);
+                if (youSure == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+            }
+
             // get the selected region record
             var region = (ShapeRegion)_osHits.SelectedItem;
             var cutList = _shapeManager.CutRegion(region, GetExclusionList());
             if (cutList.Count == 0)
             {
+                MessageBox.Show("Nothing found in this region.");
                 return;
             }
 
-            var tempPath = @"D:\temp\dump\";
             // no we need to build a new set of files in a folder...
             foreach (var cache in cutList)
             {
-                ShapeShifter.ShapeShifter.FileSlicer(cache, tempPath);
+                ShapeShifter.ShapeShifter.FileSlicer(cache, openFolder.SelectedFolder);
             }
-            MessageBox.Show("DONE!");
+
+            MessageBox.Show("Done");
         }
 
         private void Button_RefreshOveriew(object sender, RoutedEventArgs e)
