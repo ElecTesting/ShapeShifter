@@ -11,7 +11,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShapeRender", "ShapeRender\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShapeViewer", "ShapeViewer\ShapeViewer.csproj", "{2428C054-7BB6-45D4-B709-3951C00A13B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBaseReader", "DBaseReader\DBaseReader.csproj", "{BEAE441F-C222-4C7F-BA7E-37BE74E3F584}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DBaseReader", "DBaseReader\DBaseReader.csproj", "{BEAE441F-C222-4C7F-BA7E-37BE74E3F584}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F38A0175-FC03-4BA8-93AB-33261F5E3644}"
+	ProjectSection(SolutionItems) = preProject
+		Data\FeatureCodes.json = Data\FeatureCodes.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

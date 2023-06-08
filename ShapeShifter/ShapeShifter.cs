@@ -17,8 +17,10 @@ namespace ShapeShifter
 {
     public static class ShapeShifter
     {
+        public const int ZoomFactor = 1000;
+
         // TODO: Move to config
-        private static List<MapFeature> Features = JsonConvert.DeserializeObject<List<MapFeature>>(File.ReadAllText(@"D:\\_Projects_\\ShapeShifter\\Data\\FeatureCodes.json"));
+        private static List<MapFeature> Features = JsonConvert.DeserializeObject<List<MapFeature>>(File.ReadAllText("FeatureCodes.json"));
 
 
         private static string[] _featureCodeNames = new string[]
@@ -710,6 +712,17 @@ namespace ShapeShifter
                     }
                 }
             }
+        }
+
+        public static double AngleToRadians(double angle)
+        {
+            return (Math.PI / 180) * angle;
+        }
+
+        // TODO: maybe replace this!
+        public static double GetDistance(double x1, double y1, double x2, double y2)
+        {
+            return Math.Sqrt(Math.Pow((x2 - x1), 2) + Math.Pow((y2 - y1), 2));
         }
 
         private const long SHAPEFILE_HEADER_LENGTH = 100;

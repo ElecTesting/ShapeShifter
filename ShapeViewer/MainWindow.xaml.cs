@@ -27,6 +27,9 @@ using System.Drawing.Drawing2D;
 using System.Xml.Serialization;
 using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing.Printing;
+using System.Windows.Threading;
+using System.Configuration;
 
 namespace ShapeViewer
 {
@@ -52,26 +55,30 @@ namespace ShapeViewer
         private string _exportFolder = "";
         private string _cutFolder = "";
 
-        public ObservableCollection<ShapeSummary> _shapeEntities { get; set; } = new ObservableCollection<ShapeSummary>();
+        private double _heightBackup = 0;
 
-        private string _osMapFolder;
+
+        private Config _config = new Config();
+
+        public ObservableCollection<ShapeSummary> _shapeEntities { get; set; } = new ObservableCollection<ShapeSummary>();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _metersPerPixel = 1000;
+            _metersPerPixel = ShapeShifter.ShapeShifter.ZoomFactor;
 
             _windowX = 0.5;
             _windowY = 0.5;
 
-            _osMapFolder = @"D:\_OS_\BoundaryData\";
+            var json = File.ReadAllText("config.json");
+            _config = Newtonsoft.Json.JsonConvert.DeserializeObject<Config>(json);
             LoadOSMaps();
         }
 
         private void LoadOSMaps()
         {
-            foreach (var filename in Directory.GetFiles(_osMapFolder, "*.shp"))
+            foreach (var filename in Directory.GetFiles(_config.OSMapPath, "*.shp"))
             {
                 var osItem = new ShapeSummary()
                 {
@@ -112,6 +119,8 @@ namespace ShapeViewer
                 }
                 else
                 {
+                    var procWindow = GetProcessWindow();
+
                     _overviewImage = null;
                     _overlayImage = null;
 
@@ -129,6 +138,9 @@ namespace ShapeViewer
                     SetNewArea();
                     _mapOverViewGrid.OffsetY = 0;
                     _mapOverViewGrid.Reset();
+                    _txtTitle.Text = System.IO.Path.GetFileNameWithoutExtension(path);
+
+                    CloseProcessWindow(procWindow);
                 }
             }
         }
@@ -155,13 +167,13 @@ namespace ShapeViewer
 
         private void ShowStats()
         {
-            XminView.Text = $"{_shapeManager.Xmin:0}";
-            XmaxView.Text = $"{_shapeManager.Xmax:0}";
-            YminView.Text = $"{_shapeManager.Ymin:0}";
-            YmaxView.Text = $"{_shapeManager.Ymax:0}";
+            XminView.Text = $"{_shapeManager.Xmin:0.00}";
+            XmaxView.Text = $"{_shapeManager.Xmax:0.00}";
+            YminView.Text = $"{_shapeManager.Ymin:0.00}";
+            YmaxView.Text = $"{_shapeManager.Ymax:0.00}";
             ItemCount.Text = _shapeManager.RecordCount.ToString();
-            WidthText.Text = $"{_shapeManager.Width:0}";
-            HeightText.Text = $"{_shapeManager.Height:0}";
+            WidthText.Text = $"{_shapeManager.Width:0.00}";
+            HeightText.Text = $"{_shapeManager.Height:0.00}";
             //_windowX = _shapeManager.Width / 2;
             //_windowY = _shapeManager.Height / 2;
         }
@@ -194,10 +206,10 @@ namespace ShapeViewer
                 Ymax = ymax
             };
 
-            TextAreaXmin.Text = $"{box.Xmin:0}";
-            TextAreaXmax.Text = $"{box.Xmax:0}";
-            TextAreaYmin.Text = $"{box.Ymin:0}";
-            TextAreaYmax.Text = $"{box.Ymax:0}";
+            TextAreaXmin.Text = $"{box.Xmin:0.00}";
+            TextAreaXmax.Text = $"{box.Xmax:0.00}";
+            TextAreaYmin.Text = $"{box.Ymin:0.00}";
+            TextAreaYmax.Text = $"{box.Ymax:0.00}";
 
             var exclusionList = GetExclusionList();
             var itemCount = _shapeManager.SetArea(box, exclusionList);
@@ -231,7 +243,7 @@ namespace ShapeViewer
             _mapViewGrid.BoxHeight = _metersPerPixel * aspectY;
             _mapViewGrid.BoxOriginX = _windowX * _shapeManager.Width;
             _mapViewGrid.BoxOriginY = _windowY * _shapeManager.Height;
-            _mapViewGrid.AreaScale = _metersPerPixel / 1000;
+            _mapViewGrid.AreaScale = _metersPerPixel / ShapeShifter.ShapeShifter.ZoomFactor;
         }
 
         private void SetOverview()
@@ -243,6 +255,7 @@ namespace ShapeViewer
 
             if (_overviewImage == null)
             {
+                var procWindow = GetProcessWindow();
 
                 var box = new BoundingBox()
                 {
@@ -263,6 +276,8 @@ namespace ShapeViewer
                 _overviewImage = ShapeRender.ShapeRender.RenderShapeFile(areaOnly, width, height, false);
 
                 CompositeOverview();
+
+                CloseProcessWindow(procWindow);
             }
         }
 
@@ -300,9 +315,19 @@ namespace ShapeViewer
                 }
 
                 _mapOverViewGrid.Height = resultBitmap.Height;
+                
+                
+                if (resultBitmap.Height <= (int)_mapViewGrid.RenderSize.Height)
+                {
+                    _mapOverViewGrid.Enabled = false;
+                }
+                else
+                {
+                    _mapOverViewGrid.Enabled = true;
+                }
+
                 _mapOverViewGrid.Reset();
             }
-
         }
 
         private Bitmap SetImageOpacity(Bitmap image, float opacity)
@@ -356,7 +381,7 @@ namespace ShapeViewer
 
         private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            _metersPerPixel = e.NewValue * 1000 < 1 ? 1 : e.NewValue * 1000;
+            _metersPerPixel = e.NewValue * ShapeShifter.ShapeShifter.ZoomFactor < 1 ? 1 : e.NewValue * ShapeShifter.ShapeShifter.ZoomFactor;
             ZoomVal.Text = $"{_metersPerPixel:0}";
             SetNewArea();
         }
@@ -413,7 +438,7 @@ namespace ShapeViewer
         private void _mapViewGrid_Zoom(object sender, PanZoomRefreshEventArgs e)
         {
             var pan = (ZoomBorder)sender;
-            _metersPerPixel = pan.AreaScale * 1000 < 1 ? 1 : pan.AreaScale * 1000;
+            _metersPerPixel = pan.AreaScale * ShapeShifter.ShapeShifter.ZoomFactor < 1 ? 1 : pan.AreaScale * ShapeShifter.ShapeShifter.ZoomFactor;
             _mapViewGrid_Refresh(sender, e);
         }
 
@@ -752,6 +777,21 @@ namespace ShapeViewer
 
             var overlayShape = ShapeShifter.ShapeShifter.CreateShapeFileFromCache(tempList, box);
 
+
+            foreach (var poly in overlayShape.PolygonOverlays)
+            {
+                var scaleWidth = poly.Box.Xmax - overlayShape.BoundingBox.Xmin;
+                var scaleHeight = poly.Box.Ymax - overlayShape.BoundingBox.Ymin;
+                var centerX = poly.Box.Xmin + (scaleWidth / 2);
+                var centerY = poly.Box.Ymin + (scaleHeight / 2);
+
+                foreach (var basePoly in poly.Polygons)
+                {
+                    basePoly.Scale(_regionScaleSlider.Value / 100);
+                    //basePoly.StraightSkeleton(Math.Truncate(_regionScaleSlider.Value / 50));
+                }
+            }
+
             var width = (int)_mapViewGrid.RenderSize.Width;
 
             var aspectY = _shapeManager.Height / _shapeManager.Width;
@@ -776,6 +816,16 @@ namespace ShapeViewer
             }
 
             CutRegion();
+        }
+
+        private void CalcRegion_Click(object sender, RoutedEventArgs e)
+        {
+            if (_osHits.SelectedItem == null)
+            {
+                return;
+            }
+
+            CalcRegion();
         }
 
 
@@ -814,7 +864,11 @@ namespace ShapeViewer
                 return;
             }
 
+            var procWindow = GetProcessWindow();
+
             var baseFolder = openFolder.SelectedFolder;
+
+            var count = 1;
 
             foreach (ShapeRegion region in _osHits.Items)
             {
@@ -825,17 +879,23 @@ namespace ShapeViewer
                     Directory.CreateDirectory(thisFolder);
                 }
 
+                UpdateProcessWindow(procWindow, $"{count} of {_osHits.Items.Count}");
+
+                var scale = _regionScaleSlider.Value / 100;
+
                 // get the selected region record
-                var cutList = _shapeManager.CutRegion(region, GetExclusionList());
+                var cutList = _shapeManager.CutRegion(region, GetExclusionList(), scale);
 
                 // no we need to build a new set of files in a folder...
                 foreach (var cache in cutList)
                 {
                     ShapeShifter.ShapeShifter.FileSlicer(cache, thisFolder);
                 }
+
+                count++;
             }
 
-            MessageBox.Show("Done");
+            CloseProcessWindow(procWindow);
         }
 
         private void CutBox()
@@ -868,6 +928,8 @@ namespace ShapeViewer
                 }
             }
 
+            var procWindow = GetProcessWindow();
+
             // get the selected region record
             var region = (ShapeRegion)_osHits.SelectedItem;
 
@@ -887,7 +949,8 @@ namespace ShapeViewer
                     ShapeShifter.ShapeShifter.FileSlicer(cache, thisFolder);
                 }
             }
-            MessageBox.Show("Done");
+
+            CloseProcessWindow(procWindow);
         }
 
         private void QuickCut_Click(object sender, RoutedEventArgs e)
@@ -917,7 +980,11 @@ namespace ShapeViewer
                 return;
             }
 
+            var procWindow = GetProcessWindow();
+
             var baseFolder = openFolder.SelectedFolder;
+
+            var count = 1;
 
             foreach (ShapeRegion region in _osHits.Items)
             {
@@ -931,16 +998,55 @@ namespace ShapeViewer
                         Directory.CreateDirectory(thisFolder);
                     }
 
+                    var updateMessage = $"{count} of {_osHits.Items.Count}";
+
+                    UpdateProcessWindow(procWindow, updateMessage);
+
                     // no we need to build a new set of files in a folder...
                     foreach (var cache in cutList)
                     {
                         ShapeShifter.ShapeShifter.FileSlicer(cache, thisFolder);
                     }
+
+                    count++;
                 }
             }
 
-            MessageBox.Show("Done");
+            CloseProcessWindow(procWindow);
         }
+
+        private void CalcRegion()
+        {
+            var procWindow = GetProcessWindow();
+
+            var scale = _regionScaleSlider.Value / 100;
+
+            // get the selected region record
+            var region = (ShapeRegion)_osHits.SelectedItem;
+            var cutList = _shapeManager.CutRegion(region, GetExclusionList(), scale);
+            if (cutList.Count == 0)
+            {
+                CloseProcessWindow(procWindow);
+                MessageBox.Show("Nothing found in this region.");
+                return;
+            }
+
+            var Xmin = cutList.Min(c => c.BoundingBox.Xmin);
+            var Ymin = cutList.Min(c => c.BoundingBox.Ymin);
+            var Xmax = cutList.Max(c => c.BoundingBox.Xmax);   
+            var Ymax = cutList.Max(c => c.BoundingBox.Ymax);
+
+            TextRegionXmin_Copy.Text = $"{Xmin:0.00}";
+            TextRegionYmin_Copy.Text = $"{Ymin:0.00}";
+            TextRegionXmax_Copy.Text = $"{Xmax:0.00}";
+            TextRegionYmax_Copy.Text = $"{Ymax:0.00}";
+            TextRegionCount.Text = $"{cutList.Sum(c => c.Items.Count)}";
+            TextRegionWidth.Text = $"{Xmax - Xmin:0.00}";
+            TextRegionHeight.Text = $"{Ymax - Ymin:0.00}";
+
+            CloseProcessWindow(procWindow);
+        }
+
 
         private void CutRegion()
         {
@@ -971,10 +1077,14 @@ namespace ShapeViewer
                     return;
                 }
             }
+            
+            var procWindow = GetProcessWindow();
+
+            var scale = _regionScaleSlider.Value / 100;
 
             // get the selected region record
             var region = (ShapeRegion)_osHits.SelectedItem;
-            var cutList = _shapeManager.CutRegion(region, GetExclusionList());
+            var cutList = _shapeManager.CutRegion(region, GetExclusionList(), scale);
             if (cutList.Count == 0)
             {
                 MessageBox.Show("Nothing found in this region.");
@@ -987,7 +1097,7 @@ namespace ShapeViewer
                 ShapeShifter.ShapeShifter.FileSlicer(cache, openFolder.SelectedFolder);
             }
 
-            MessageBox.Show("Done");
+            CloseProcessWindow(procWindow);
         }
 
         private void Button_RefreshOveriew(object sender, RoutedEventArgs e)
@@ -1015,6 +1125,100 @@ namespace ShapeViewer
                 GetOverlayImage(item.RecordId);
                 CompositeOverview();
             }
+        }
+
+        private void Test_Click(object sender, RoutedEventArgs e)
+        {
+            GetProcessWindow();
+        }
+
+        private System.Windows.Window GetProcessWindow()
+        {
+            var window = new System.Windows.Window()
+            {
+                Width = 300,
+                Height = 150,
+                Title = "Processing..",
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            };
+
+            window.Content = new TextBlock()
+            {
+                Text = "Please wait..",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                FontSize = 24,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(10)
+            };
+
+            window.Owner = this;
+            window.Show();
+            this.IsEnabled = false;
+            DoEvents();
+            return window;
+        }
+
+        private void UpdateProcessWindow(System.Windows.Window window, string message)
+        {
+            window.Content = new TextBlock()
+            {
+                Text = message,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                FontSize = 24,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(10)
+            };
+            this.UpdateLayout();
+            DoEvents();
+        }
+
+        private void CloseProcessWindow(System.Windows.Window window)
+        {
+            this.IsEnabled = true;
+            window.Close();
+        }
+
+        public static void DoEvents()
+        {
+            var frame = new DispatcherFrame();
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,
+                new DispatcherOperationCallback(
+                    delegate (object f)
+                    {
+                        ((DispatcherFrame)f).Continue = false;
+                        return null;
+                    }), frame);
+            Dispatcher.PushFrame(frame);
+        }
+
+        private void _regionScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (_regionScaleText != null)
+            {
+                var slider = (Slider)sender;
+                _regionScaleText.Text = $"Region Scale: {slider.Value:0.00}%";
+
+                if (_overlayImage != null)
+                {
+                    var recordId = -1;
+
+                    if (_osHits.SelectedItem != null)
+                    {
+                        var item = (ShapeRegion)_osHits.SelectedItem;
+                        recordId = item.RecordId;
+                    }
+                    
+                    GetOverlayImage(recordId);
+                    CompositeOverview();
+                }
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

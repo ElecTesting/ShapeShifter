@@ -7,11 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="FeatureCodes.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DBaseReader\DBaseReader.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="FeatureCodes.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

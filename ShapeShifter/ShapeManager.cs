@@ -74,13 +74,14 @@ namespace ShapeShifter
          * grabs items within the bounding box
          * then checks if the intersect with the regions polygon
          */
-        public List<ShapeCache> CutRegion(ShapeRegion region, List<string> exclusions)
+        public List<ShapeCache> CutRegion(ShapeRegion region, List<string> exclusions, double scale)
         {
             var cutCache = new List<ShapeCache>();  
 
             // get the poly from the shape data
             var shapeRecord = ShapeShifter.GetSingleRecord(OverlayCache, region.RecordId);
             var regionPoly = shapeRecord.PolygonOverlays[0].Polygons[0];
+            regionPoly.Scale(scale);
 
             // set the area to the bounding box of the region polygon
             var boxCount = SetArea(region.Box, exclusions);

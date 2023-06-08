@@ -24,6 +24,7 @@ namespace ShapeViewer
         //public double BoxY { get; set; }
 
         public double OffsetY { get; set; } = 0;
+        public bool Enabled { get; set; } = true;
 
         private UIElement _child = null;
         private Point _origin;
@@ -116,11 +117,14 @@ namespace ShapeViewer
             {
                 if (_child != null)
                 {
-                    var tt = GetTranslateTransform(_child);
-                    _start = e.GetPosition(this);
-                    _origin = new Point(0, tt.Y);
-                    this.Cursor = Cursors.Hand;
-                    _child.CaptureMouse();
+                    if (Enabled)
+                    {
+                        var tt = GetTranslateTransform(_child);
+                        _start = e.GetPosition(this);
+                        _origin = new Point(0, tt.Y);
+                        this.Cursor = Cursors.Hand;
+                        _child.CaptureMouse();
+                    }
                 }
             }
         }
