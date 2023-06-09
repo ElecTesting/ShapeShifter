@@ -32,7 +32,7 @@ namespace ShapeViewer
         public double BoxY { get; set; }
 
 
-        private UIElement _child = null;
+        private UIElement _child = new UIElement();
         private Point _origin;
         private Point _start;
 

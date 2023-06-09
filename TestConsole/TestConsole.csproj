@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DBaseReader\DBaseReader.csproj" />
     <ProjectReference Include="..\ShapeRender\ShapeRender.csproj" />
     <ProjectReference Include="..\ShapeShifter\ShapeShifter.csproj" />

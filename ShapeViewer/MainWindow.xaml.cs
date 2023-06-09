@@ -30,6 +30,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Printing;
 using System.Windows.Threading;
 using System.Configuration;
+using System.Runtime.Intrinsics.X86;
 
 namespace ShapeViewer
 {
@@ -40,16 +41,14 @@ namespace ShapeViewer
     public partial class MainWindow : System.Windows.Window
     {
         private ShapeManager _shapeManager;
-        private double _windowRatioY;
-        private string _folder;
+
         private double _metersPerPixel;
-        private System.Windows.Shapes.Rectangle _viewWindow;
-        private bool _rendering = false;
+
         private bool _fileLoaded = false;
         private bool _hideMouseTip = false;
 
-        private Bitmap _overviewImage;
-        private Bitmap _overlayImage;
+        private Bitmap? _overviewImage;
+        private Bitmap? _overlayImage;
 
         private string _shapeFolder = "";
         private string _exportFolder = "";
@@ -57,6 +56,7 @@ namespace ShapeViewer
 
         private double _heightBackup = 0;
 
+        private const double KmMi = 0.621371;
 
         private Config _config = new Config();
 
@@ -76,6 +76,9 @@ namespace ShapeViewer
             LoadOSMaps();
         }
 
+        /* function to get the .sho files from the configured os maps folder path and
+         * add them to the drop down list
+         */
         private void LoadOSMaps()
         {
             foreach (var filename in Directory.GetFiles(_config.OSMapPath, "*.shp"))
@@ -89,7 +92,7 @@ namespace ShapeViewer
             }
         }
             
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void OpenShapeFolder_Click(object sender, RoutedEventArgs e)
         {
             var openFolder = new FolderBrowserDialog()
             {
@@ -125,7 +128,6 @@ namespace ShapeViewer
                     _overlayImage = null;
 
                     _shapeManager = new ShapeManager(path);
-                    _folder = path;
                     ShowStats();
 
                     GetFileItems(_shapeManager.Summary);
@@ -174,19 +176,20 @@ namespace ShapeViewer
             ItemCount.Text = _shapeManager.RecordCount.ToString();
             WidthText.Text = $"{_shapeManager.Width:0.00}";
             HeightText.Text = $"{_shapeManager.Height:0.00}";
-            //_windowX = _shapeManager.Width / 2;
-            //_windowY = _shapeManager.Height / 2;
+            var area = _shapeManager.Width * _shapeManager.Height / 1000;
+            MapKm.Text = $"{area:0.00}";
+            MapMi.Text = $"{area * 0.386102:0.00}";
         }
 
+        /* set a new viewing area for the detail tab based on _windowX and _windowY
+         * when area is determined, render the map
+         */
         private void SetNewArea()
         {
             if (!_fileLoaded)
             {
                 return;
             }
-
-            //var metersX = _mapViewGrid.RenderSize.Width / _shapeManager.Width * _metersPerPixel;
-            //var metersY = _mapViewGrid.RenderSize.Height / _shapeManager.Height * _metersPerPixel;
 
             var metersX = _metersPerPixel;
             var scaleY = _mapViewGrid.RenderSize.Height / _mapViewGrid.RenderSize.Width;
@@ -246,6 +249,11 @@ namespace ShapeViewer
             _mapViewGrid.AreaScale = _metersPerPixel / ShapeShifter.ShapeShifter.ZoomFactor;
         }
 
+        /* SetOverview
+         * creates an image of the entire map which is then stored in _overviewImage if
+         * the image doesn't already exist.
+         * It then calls CompositeOverview to combine an overlay if it exists
+         */
         private void SetOverview()
         {
             if (_shapeManager == null)
@@ -281,6 +289,10 @@ namespace ShapeViewer
             }
         }
 
+        /* CompositeOverview
+         * combines the overview image with the overlay image if it exists
+         * and then renders the result to the overview tab
+         */
         private void CompositeOverview()
         {
             if (_overviewImage == null)
@@ -330,6 +342,9 @@ namespace ShapeViewer
             }
         }
 
+        /* SetImageOpacity
+         * forces opacity on an image
+         */
         private Bitmap SetImageOpacity(Bitmap image, float opacity)
         {
             //create a Bitmap the size of the image provided  
@@ -338,17 +353,10 @@ namespace ShapeViewer
             //create a graphics object from the image  
             using (Graphics gfx = Graphics.FromImage(bmp))
             {
-
-                //create a color matrix object  
+                //create a color matrix object as set opactiy
                 ColorMatrix matrix = new ColorMatrix();
-
-                //set the opacity  
                 matrix.Matrix33 = opacity;
-
-                //create image attributes  
                 ImageAttributes attributes = new ImageAttributes();
-
-                //set the color(opacity) of the image  
                 attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 
                 //now draw the image  
@@ -514,15 +522,19 @@ namespace ShapeViewer
                 var mouseX = e.GetPosition((IInputElement)sender).X;
                 var mouseY = e.GetPosition((IInputElement)sender).Y;
 
-                var x = (mouseX / _mapViewGrid.RenderSize.Width) - 0.5;
-                var y = (mouseY / _mapViewGrid.RenderSize.Height) - 0.5;
-                x = (_windowX * _shapeManager.Width) + (x * _metersPerPixel);
-                y = (_windowY * _shapeManager.Height) - (y * _metersPerPixel * aspectY);
+                var x = (mouseX / _mapViewGrid.RenderSize.Width);
+                var y = (mouseY / _mapViewGrid.RenderSize.Height - );
+                var xMeters = x * _shapeManager.Width;
+                var yMeters = y * _shapeManager.Height;
 
-                x = _shapeManager.Xmin + x;
-                y = _shapeManager.Ymax - y;
-                //_pointPosX.Text = $"{x:0}";
-                //_pointPosY.Text = $"{y:0}";
+                var windowXMeters = _windowX * _shapeManager.Width;
+                var windowYMeters = _windowY * _shapeManager.Height;
+
+                var xTotal = windowXMeters + xMeters;
+                var yTotal = windowYMeters + yMeters;
+
+                //y = (_windowY * _shapeManager.Height) + (y * _metersPerPixel * aspectY);
+
 
                 if (!_detailToolTip.IsOpen) 
                 { 
@@ -662,7 +674,7 @@ namespace ShapeViewer
                                 var thisOverlay = overlays.Where(x => x.RecordId == item.RecordId).FirstOrDefault();
                                 foreach (ShapeRegion comboItem in _osHits.Items)
                                 {
-                                    if (thisOverlay.RecordId == comboItem.RecordId)
+                                    if (thisOverlay?.RecordId == comboItem.RecordId)
                                     {
                                         _osHits.SelectedItem = comboItem;
                                         return;
@@ -706,6 +718,7 @@ namespace ShapeViewer
 
         private void ApplyOverlay_Click(object sender, RoutedEventArgs e)
         {
+            // safety checks
             if (_osMaps.SelectedIndex == -1)
                 return;
 
@@ -715,6 +728,15 @@ namespace ShapeViewer
             ApplyOverlay();
         }
 
+        /* Apply Overlay
+         * 
+         * Using the selected overlay from the drop down, it determines which
+         * regions fall withing the currently loaded map. These are then
+         * added to a secondary drop down for user selection.
+         * 
+         * It then generates a new overlay map and composites it with the
+         * overview.
+         */
         private void ApplyOverlay()
         {
             var osMap = (ShapeSummary)_osMaps.SelectedItem;
@@ -724,7 +746,10 @@ namespace ShapeViewer
             _shapeManager.CrossRef(crossRef);
 
             OverlayHitsText.Text = $"{_shapeManager.OverlayCache.Items.Count}";
+            
             var hitList = _shapeManager.GetOverlayHits();
+            hitList.Sort((x, y) => x.Name.CompareTo(y.Name));
+
             _osHits.Items.Clear();
             foreach (var hit in hitList)
             {
@@ -733,10 +758,17 @@ namespace ShapeViewer
 
             GetOverlayImage();
             CompositeOverview();
-            //SetNewArea();
-
         }
 
+        /* Get Overlay Image
+         * 
+         * Generates an overlay image for a specific recordId within
+         * the overlay cache. If the recordId is not passed in
+         * then it defaults to -1 which generates the image for all 
+         * regions.
+         * 
+         * The regions are scaled based on the slider.
+         */
         private void GetOverlayImage(int recordId = -1)
         {
             if (_shapeManager == null)
@@ -774,23 +806,7 @@ namespace ShapeViewer
                 tempList.Add(temp);
             }
 
-
             var overlayShape = ShapeShifter.ShapeShifter.CreateShapeFileFromCache(tempList, box);
-
-
-            foreach (var poly in overlayShape.PolygonOverlays)
-            {
-                var scaleWidth = poly.Box.Xmax - overlayShape.BoundingBox.Xmin;
-                var scaleHeight = poly.Box.Ymax - overlayShape.BoundingBox.Ymin;
-                var centerX = poly.Box.Xmin + (scaleWidth / 2);
-                var centerY = poly.Box.Ymin + (scaleHeight / 2);
-
-                foreach (var basePoly in poly.Polygons)
-                {
-                    basePoly.Scale(_regionScaleSlider.Value / 100);
-                    //basePoly.StraightSkeleton(Math.Truncate(_regionScaleSlider.Value / 50));
-                }
-            }
 
             var width = (int)_mapViewGrid.RenderSize.Width;
 
@@ -844,6 +860,11 @@ namespace ShapeViewer
             CutBox();
         }
 
+        /* Cut Region All
+         * 
+         * Same as CutRegion except it processes all regions which have been
+         * applied to the current map.
+         */
         private void CutRegionAll()
         {
             var openFolder = new FolderBrowserDialog()
@@ -881,10 +902,8 @@ namespace ShapeViewer
 
                 UpdateProcessWindow(procWindow, $"{count} of {_osHits.Items.Count}");
 
-                var scale = _regionScaleSlider.Value / 100;
-
                 // get the selected region record
-                var cutList = _shapeManager.CutRegion(region, GetExclusionList(), scale);
+                var cutList = _shapeManager.CutRegion(region, GetExclusionList(), 1);
 
                 // no we need to build a new set of files in a folder...
                 foreach (var cache in cutList)
@@ -898,6 +917,12 @@ namespace ShapeViewer
             CloseProcessWindow(procWindow);
         }
 
+        /* Cut Box
+         * 
+         * Produces a new set of shape files based on the current
+         * selected regions bounding box.
+         * The box is scaled to the size of the slider.
+         */
         private void CutBox()
         {
             var openFolder = new FolderBrowserDialog()
@@ -918,6 +943,7 @@ namespace ShapeViewer
                 return;
             }
 
+            // check the folder is empty
             var fileList = Directory.GetFiles(openFolder.SelectedFolder, "*.shp");
             if (fileList.Length > 0)
             {
@@ -931,36 +957,37 @@ namespace ShapeViewer
             var procWindow = GetProcessWindow();
 
             // get the selected region record
+            // and scale it to the slider value
             var region = (ShapeRegion)_osHits.SelectedItem;
+            var scale = _regionScaleSlider.Value / 100;
+            region.Box.Scale(scale);
 
+            // cut it out
             var cutList = _shapeManager.GetCacheArea(region.Box, GetExclusionList());
             if (cutList.Count > 0)
             {
-                var thisFolder = System.IO.Path.Combine(openFolder.SelectedFolder, region.Name);
-
-                if (!Directory.Exists(thisFolder))
-                {
-                    Directory.CreateDirectory(thisFolder);
-                }
-
-                // no we need to build a new set of files in a folder...
+                // build the new set of files
                 foreach (var cache in cutList)
                 {
-                    ShapeShifter.ShapeShifter.FileSlicer(cache, thisFolder);
+                    ShapeShifter.ShapeShifter.FileSlicer(cache, openFolder.SelectedFolder);
                 }
             }
 
             CloseProcessWindow(procWindow);
         }
 
-        private void QuickCut_Click(object sender, RoutedEventArgs e)
+        private void BoxCutAll_Click(object sender, RoutedEventArgs e)
         {
-            QuickCut();
+            CutBoxAll();
         }
 
 
-
-        private void QuickCut()
+        /* Cut Box All
+         * 
+         * Same as the CutBox function except it operates on all
+         * regions which have been applied to the current map.
+         */
+        private void CutBoxAll()
         {
             var openFolder = new FolderBrowserDialog()
             {
@@ -986,8 +1013,12 @@ namespace ShapeViewer
 
             var count = 1;
 
+            var scale = _regionScaleSlider.Value / 100;
+
             foreach (ShapeRegion region in _osHits.Items)
             {
+                region.Box.Scale(scale);
+
                 var cutList = _shapeManager.GetCacheArea(region.Box, GetExclusionList());
                 if (cutList.Count > 0)
                 {
@@ -1015,15 +1046,55 @@ namespace ShapeViewer
             CloseProcessWindow(procWindow);
         }
 
+
+        /* Calc Box
+         * 
+         * Cuts the current regions bounding box to determine resulting size
+         * and display those values on the form.  The box is scaleld to the
+         * scale slider.
+         */
+        private void CalcBox()
+        {
+            // get the selected region record
+            // and scale it to the slider value
+            var region = (ShapeRegion)_osHits.SelectedItem;
+            var scale = _regionScaleSlider.Value / 100;
+            region.Box.Scale(scale);
+
+            // cut it out
+            var cutList = _shapeManager.GetCacheArea(region.Box, GetExclusionList());
+
+            var Xmin = cutList.Min(c => c.BoundingBox.Xmin);
+            var Ymin = cutList.Min(c => c.BoundingBox.Ymin);
+            var Xmax = cutList.Max(c => c.BoundingBox.Xmax);
+            var Ymax = cutList.Max(c => c.BoundingBox.Ymax);
+            var width = Xmax - Xmin;
+            var height = Ymax - Ymin;
+            var area = width * height / 1000;
+
+            TextRegionXmin_Copy.Text = $"{Xmin:0.00}";
+            TextRegionYmin_Copy.Text = $"{Ymin:0.00}";
+            TextRegionXmax_Copy.Text = $"{Xmax:0.00}";
+            TextRegionYmax_Copy.Text = $"{Ymax:0.00}";
+            TextRegionCount.Text = $"{cutList.Sum(c => c.Items.Count)}";
+            TextRegionWidth.Text = $"{width:0.00}";
+            TextRegionHeight.Text = $"{height:0.00}";
+            TextRegionKm.Text = $"{area:0.00}";
+            TextRegionMi.Text = $"{area * KmMi:0.00}";
+        }
+
+        /* Calc Region
+         * 
+         * Cuts the current region to determine resulting size
+         * and display those values on the form.
+         */
         private void CalcRegion()
         {
             var procWindow = GetProcessWindow();
 
-            var scale = _regionScaleSlider.Value / 100;
-
             // get the selected region record
             var region = (ShapeRegion)_osHits.SelectedItem;
-            var cutList = _shapeManager.CutRegion(region, GetExclusionList(), scale);
+            var cutList = _shapeManager.CutRegion(region, GetExclusionList(), 1);
             if (cutList.Count == 0)
             {
                 CloseProcessWindow(procWindow);
@@ -1035,19 +1106,30 @@ namespace ShapeViewer
             var Ymin = cutList.Min(c => c.BoundingBox.Ymin);
             var Xmax = cutList.Max(c => c.BoundingBox.Xmax);   
             var Ymax = cutList.Max(c => c.BoundingBox.Ymax);
+            var width = Xmax - Xmin;
+            var height = Ymax - Ymin;
+            var area = width * height / 1000;
 
             TextRegionXmin_Copy.Text = $"{Xmin:0.00}";
             TextRegionYmin_Copy.Text = $"{Ymin:0.00}";
             TextRegionXmax_Copy.Text = $"{Xmax:0.00}";
             TextRegionYmax_Copy.Text = $"{Ymax:0.00}";
             TextRegionCount.Text = $"{cutList.Sum(c => c.Items.Count)}";
-            TextRegionWidth.Text = $"{Xmax - Xmin:0.00}";
-            TextRegionHeight.Text = $"{Ymax - Ymin:0.00}";
+            TextRegionWidth.Text = $"{width:0.00}";
+            TextRegionHeight.Text = $"{height:0.00}";
+            TextRegionKm.Text = $"{area:0.00}";
+            TextRegionMi.Text = $"{area * KmMi:0.00}";
 
             CloseProcessWindow(procWindow);
         }
 
-
+        /* Cut Region
+         * 
+         * cuts and exports a new shape folder based on the polygon 
+         * of the currently selected region.
+         * Scaling is not implemented here as the polygon shape
+         * can potentially miss things.
+         */
         private void CutRegion()
         {
             var openFolder = new FolderBrowserDialog()
@@ -1080,11 +1162,9 @@ namespace ShapeViewer
             
             var procWindow = GetProcessWindow();
 
-            var scale = _regionScaleSlider.Value / 100;
-
             // get the selected region record
             var region = (ShapeRegion)_osHits.SelectedItem;
-            var cutList = _shapeManager.CutRegion(region, GetExclusionList(), scale);
+            var cutList = _shapeManager.CutRegion(region, GetExclusionList(), 1);
             if (cutList.Count == 0)
             {
                 MessageBox.Show("Nothing found in this region.");
@@ -1116,6 +1196,12 @@ namespace ShapeViewer
             _hideMouseTip = false;
         }
 
+        /* event for region selection change.
+         * 
+         * This event is fired when the user selects a region from the list.
+         * It will then load the overlay image for that region and composite
+         * it with the overview image.
+         */
         private void _osHits_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var combo = (System.Windows.Controls.ComboBox)sender;
@@ -1127,11 +1213,11 @@ namespace ShapeViewer
             }
         }
 
-        private void Test_Click(object sender, RoutedEventArgs e)
-        {
-            GetProcessWindow();
-        }
-
+        /* Get Process Window
+         * 
+         * Simple function which instansiates a new processing window to
+         * feedback to the user that stuff is happening.
+         */
         private System.Windows.Window GetProcessWindow()
         {
             var window = new System.Windows.Window()
@@ -1159,6 +1245,10 @@ namespace ShapeViewer
             return window;
         }
 
+        /* Update Process Window
+         * 
+         * Takes a window and string and updates the current text.
+         */
         private void UpdateProcessWindow(System.Windows.Window window, string message)
         {
             window.Content = new TextBlock()
@@ -1180,6 +1270,10 @@ namespace ShapeViewer
             window.Close();
         }
 
+        /* Do Events
+         * 
+         * Hacky method to ensure the UI gets updated when code is blocking.
+         */
         public static void DoEvents()
         {
             var frame = new DispatcherFrame();
@@ -1198,7 +1292,7 @@ namespace ShapeViewer
             if (_regionScaleText != null)
             {
                 var slider = (Slider)sender;
-                _regionScaleText.Text = $"Region Scale: {slider.Value:0.00}%";
+                _regionScaleText.Text = $"Cut Scale: {slider.Value:0.00}%";
 
                 if (_overlayImage != null)
                 {
@@ -1216,9 +1310,14 @@ namespace ShapeViewer
             }
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void CalcBox_Click(object sender, RoutedEventArgs e)
         {
+            if (_osHits.SelectedItem == null)
+            {
+                return;
+            }
 
+            CalcBox();
         }
     }
 }
