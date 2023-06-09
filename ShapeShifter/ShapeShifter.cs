@@ -179,7 +179,6 @@ namespace ShapeShifter
 
         private static int GetOrdinalFromList(DBaseReader.DBaseReader dbf, string[] names)
         {
-            var ordinal = 0;
             foreach (var featName in names)
             {
                 if (dbf.Columns.Where(c => c.Name == featName).FirstOrDefault() != null)

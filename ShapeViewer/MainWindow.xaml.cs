@@ -40,11 +40,9 @@ namespace ShapeViewer
     public partial class MainWindow : System.Windows.Window
     {
         private ShapeManager _shapeManager;
-        private double _windowRatioY;
-        private string _folder;
+
         private double _metersPerPixel;
-        private System.Windows.Shapes.Rectangle _viewWindow;
-        private bool _rendering = false;
+
         private bool _fileLoaded = false;
         private bool _hideMouseTip = false;
 
@@ -125,7 +123,6 @@ namespace ShapeViewer
                     _overlayImage = null;
 
                     _shapeManager = new ShapeManager(path);
-                    _folder = path;
                     ShowStats();
 
                     GetFileItems(_shapeManager.Summary);
@@ -662,7 +659,7 @@ namespace ShapeViewer
                                 var thisOverlay = overlays.Where(x => x.RecordId == item.RecordId).FirstOrDefault();
                                 foreach (ShapeRegion comboItem in _osHits.Items)
                                 {
-                                    if (thisOverlay.RecordId == comboItem.RecordId)
+                                    if (thisOverlay?.RecordId == comboItem.RecordId)
                                     {
                                         _osHits.SelectedItem = comboItem;
                                         return;
@@ -953,14 +950,14 @@ namespace ShapeViewer
             CloseProcessWindow(procWindow);
         }
 
-        private void QuickCut_Click(object sender, RoutedEventArgs e)
+        private void BoxCutAll_Click(object sender, RoutedEventArgs e)
         {
-            QuickCut();
+            BoxCutAll();
         }
 
 
 
-        private void QuickCut()
+        private void BoxCutAll()
         {
             var openFolder = new FolderBrowserDialog()
             {
@@ -986,8 +983,12 @@ namespace ShapeViewer
 
             var count = 1;
 
+            var scale = _regionScaleSlider.Value / 100;
+
             foreach (ShapeRegion region in _osHits.Items)
             {
+                region.Box.Scale(scale);
+
                 var cutList = _shapeManager.GetCacheArea(region.Box, GetExclusionList());
                 if (cutList.Count > 0)
                 {
@@ -1198,7 +1199,7 @@ namespace ShapeViewer
             if (_regionScaleText != null)
             {
                 var slider = (Slider)sender;
-                _regionScaleText.Text = $"Region Scale: {slider.Value:0.00}%";
+                _regionScaleText.Text = $"Cut Scale: {slider.Value:0.00}%";
 
                 if (_overlayImage != null)
                 {

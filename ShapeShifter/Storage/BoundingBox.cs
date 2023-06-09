@@ -84,5 +84,18 @@ namespace ShapeShifter.Storage
             }
         }
 
+        public void Scale(double factor)
+        {
+            var width = Xmax - Xmin;
+            var height = Ymax - Ymin;
+            var centerX = Xmin + width / 2;
+            var centerY = Ymin + height / 2;    
+            width *= factor;
+            height *= factor;
+            Xmin = centerX - width / 2;
+            Xmax = centerX + width / 2;
+            Ymin = centerY - height / 2;
+            Ymax = centerY + height / 2;
+        }
     }
 }

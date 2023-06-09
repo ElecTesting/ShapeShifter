@@ -86,12 +86,12 @@
         <ComboBox Name="_osHits" SelectionChanged="_osHits_SelectionChanged" HorizontalAlignment="Left" Height="25" Margin="916,520,0,0" VerticalAlignment="Top" Width="270"/>
         <Button Content="Refresh Overview" HorizontalAlignment="Left" Height="26" Margin="1233,21,0,0" VerticalAlignment="Top" Width="157" Click="Button_RefreshOveriew"/>
         <Button Content="Cut Region" HorizontalAlignment="Left" Height="26" Margin="1200,519,0,0" VerticalAlignment="Top" Width="95" Click="CutRegion_Click"/>
-        <Button Content="Cut All Box" HorizontalAlignment="Left" Height="26" Margin="1300,481,0,0" VerticalAlignment="Top" Width="90" Click="QuickCut_Click" RenderTransformOrigin="0.595,3.54"/>
+        <Button Content="Cut All Box" HorizontalAlignment="Left" Height="26" Margin="1300,481,0,0" VerticalAlignment="Top" Width="90" Click="BoxCutAll_Click" RenderTransformOrigin="0.595,3.54"/>
         <Button Content="Cut Box" HorizontalAlignment="Left" Height="26" Margin="1300,519,0,0" VerticalAlignment="Top" Width="90" Click="CutBox_Click"/>
         <Button Content="Cut All Region" HorizontalAlignment="Left" Height="26" Margin="1200,481,0,0" VerticalAlignment="Top" Width="95" Click="CutRegionAll_Click" RenderTransformOrigin="0.595,3.54"/>
         <TextBlock Name="_txtTitle" HorizontalAlignment="Left" Margin="911,52,0,0" TextWrapping="Wrap" Text="---" VerticalAlignment="Top"/>
         <Slider Name="_regionScaleSlider" ValueChanged="_regionScaleSlider_ValueChanged" HorizontalAlignment="Left" Height="18" Margin="1200,555,0,0" VerticalAlignment="Top" Width="190" Minimum="100" Maximum="110"/>
-        <TextBlock Name="_regionScaleText" HorizontalAlignment="Left" Margin="1077,556,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="Region Scale: 100.00%"/></TextBlock>
+        <TextBlock Name="_regionScaleText" HorizontalAlignment="Left" Margin="1091,556,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="Cut Scale: 100.00%"/></TextBlock>
         <TextBlock HorizontalAlignment="Left" Margin="1170,604,0,0" TextWrapping="Wrap" Text="Xmin" VerticalAlignment="Top" Width="40"/>
         <TextBlock HorizontalAlignment="Left" Margin="1170,625,0,0" TextWrapping="Wrap" Text="Xmax" VerticalAlignment="Top" Width="40"/>
         <TextBlock HorizontalAlignment="Left" Margin="1170,646,0,0" TextWrapping="Wrap" Text="Ymin" VerticalAlignment="Top" Width="40"/>
