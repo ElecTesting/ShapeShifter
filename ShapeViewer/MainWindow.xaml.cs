@@ -512,6 +512,13 @@ namespace ShapeViewer
             }
         }
 
+        /* Map mouse move
+         * 
+         * updatges the tool tip for X / Y values
+         * In all honesty this turned into a bit of a mess which I
+         * don't fully understand and had to re-hack the Y result to
+         * make it correct
+         */
         private void Map_MouseMove(object sender, MouseEventArgs e)
         {
             if (_shapeManager != null)
@@ -522,19 +529,13 @@ namespace ShapeViewer
                 var mouseX = e.GetPosition((IInputElement)sender).X;
                 var mouseY = e.GetPosition((IInputElement)sender).Y;
 
-                var x = (mouseX / _mapViewGrid.RenderSize.Width);
-                var y = (mouseY / _mapViewGrid.RenderSize.Height - );
-                var xMeters = x * _shapeManager.Width;
-                var yMeters = y * _shapeManager.Height;
+                var x = (mouseX / _mapViewGrid.RenderSize.Width) - 0.5;
+                var y = (mouseY / _mapViewGrid.RenderSize.Height) - 0.5;
+                x = (_windowX * _shapeManager.Width) + (x * _metersPerPixel);
+                y = (_windowY * _shapeManager.Height) - (y * _metersPerPixel * aspectY);
 
-                var windowXMeters = _windowX * _shapeManager.Width;
-                var windowYMeters = _windowY * _shapeManager.Height;
-
-                var xTotal = windowXMeters + xMeters;
-                var yTotal = windowYMeters + yMeters;
-
-                //y = (_windowY * _shapeManager.Height) + (y * _metersPerPixel * aspectY);
-
+                x = _shapeManager.Xmin + x;
+                y = _shapeManager.Ymax - (_shapeManager.Width - y);
 
                 if (!_detailToolTip.IsOpen) 
                 { 
@@ -551,6 +552,11 @@ namespace ShapeViewer
             }
         }
 
+        /* Overview mouse over
+         * 
+         * updates the tool tip with X / Y position
+         * this one is much cleaner than the other
+         */
         private void Overview_MouseMove(object sender, MouseEventArgs e)
         {
             if (_overviewImage == null)
@@ -640,7 +646,14 @@ namespace ShapeViewer
                 }
             }
         }
-
+        /* Find Point in Overlay
+         * 
+         * using a combination of the mouse and map scroll position,
+         * create a point on the map. With point determined, check
+         * all overlay regions to see if that point is within them.
+         * First overlay found then picks that single region from
+         * the drop down and generates a map with only that selected.
+         */
         private void FindPointInOverlay(ShapePoint point)
         {
             if (_shapeManager.OverlayCache.Items.Count == 0)
