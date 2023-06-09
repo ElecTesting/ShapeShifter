@@ -1,4 +1,4 @@
-﻿using FolderBrowserEx;
+using FolderBrowserEx;
 using Microsoft.Win32;
 using ShapeShifter;
 using ShapeShifter.Storage;
